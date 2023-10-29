@@ -1,6 +1,6 @@
 import axios from 'axios';
 import Link from 'next/link';
-import React, { useEffect, useReducer, useContext ,useState} from 'react';
+import React, { useEffect, useReducer, useState} from 'react';
 import Layout from '../../components/Layout';
 import { getError } from '../../utils/error';
 import { toast } from 'react-toastify';
@@ -30,7 +30,7 @@ function reducer(state, action) {
 }
 
 export default function AdminOrderScreen() {
-  const [{ loading, error, orders, successDelete, loadingDelete }, dispatch] = useReducer(reducer, {
+  const [{ loading, error, orders, successDelete}, dispatch] = useReducer(reducer, {
     loading: true,
     orders: [],
     error: '',

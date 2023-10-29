@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useRouter } from 'next/router';
-import { useContext, useEffect, useState } from 'react';
+import { useContext} from 'react';
 import { toast } from 'react-toastify';
 import Layout from '../components/Layout';
 import { Store } from '../utils/Store';
@@ -38,7 +38,6 @@ export default function Search(props) {
     subcategory='all',
     brand = 'all',
     price = 'all',
-    sort = 'featured',
     page = 1,
   } = router.query;
   const { products, categories,subcategories, pages} = props;
@@ -86,9 +85,6 @@ export default function Search(props) {
   const brandHandler = (e) => {
     filterSearch({ brand: e.target.value });
   };
-  const sortHandler = (e) => {
-    filterSearch({ sort: e.target.value });
-  };
   const priceHandler = (e) => {
     filterSearch({ price: e.target.value });
   };
@@ -119,13 +115,13 @@ const addToCartHandler = async (product) => {
     dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
   };
 
-  const [showsub , setShowSub] =useState(false)
-  useEffect(()=>{
+  // const [showsub , setShowSub] =useState(false)
+  // useEffect(()=>{
  
-    if(category != "all" && category){
-      setShowSub(true)
-    } else(setShowSub(false))   
-  },[category])
+  //   if(category != "all" && category){
+  //     setShowSub(true)
+  //   } else(setShowSub(false))   
+  // },[category])
   return (
     <Layout title="search">
       <div className="grid grid-cols-1 md:grid-cols-4 md:gap-6">
@@ -276,7 +272,7 @@ export async function getServerSideProps({ query }) {
       : {};
  
   const categoryFilter = category && category !== 'all' ? { name :category } : {};
-  const subcategoryFilter = subcategory && subcategory !== 'all' ? { subcategory } : {};
+  // const subcategoryFilter = subcategory && subcategory !== 'all' ? { subcategory } : {};
   const brandFilter = brand && brand !== 'all' ? { brand } : {};
   const ratingFilter =
     rating && rating !== 'all'
@@ -316,7 +312,7 @@ export async function getServerSideProps({ query }) {
   const subcategoryi = await Category.find({name: subcategory});
   const categories = await Category.find({});
   const subcategories = await Subcategory.find({}).lean();
-  const brands = await Product.find({}).distinct('brand');
+  // const brands = await Product.find({}).distinct('brand');
   let productDocs;
   if(category || ''){
      productDocs = await Product.find(

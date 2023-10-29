@@ -1,6 +1,5 @@
 import axios from 'axios';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import React, { useEffect, useReducer , useState } from 'react';
 import { toast } from 'react-toastify';
 import Layout from '../../components/Layout';

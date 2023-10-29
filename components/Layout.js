@@ -174,7 +174,7 @@ export default function Layout({ title, children }) {
     };
     fetchProduct()
   }
-  }, []);
+  }, [title]);
 const changeNav =() =>{
   setIsCategorySvg(!isCategorySvg)
 }

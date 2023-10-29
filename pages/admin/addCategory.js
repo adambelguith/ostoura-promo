@@ -44,7 +44,7 @@ function reducer(state, action) {
 export default function AdminCategoryEditScreen() {
  
 
-  const [{ loading, error, loadingUpdate, loadingUpload}, dispatch] =
+  const [{ loadingUpdate}, dispatch] =
     useReducer(reducer, {
       loading: true,
       error: '',
@@ -54,24 +54,9 @@ export default function AdminCategoryEditScreen() {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
   } = useForm();
   const [categoryList, setCategoryList] = useState([])
 
-//   useEffect(() => {
-//     const fetchData = async () => {
-//     try {
-//         dispatch({ type: 'FETCH_REQUEST' });
-//         const { data } = await axios.get(`/api/admin/categories`);
-//         const nameCtegory =  data.map((category) => category.name)
-//         setCategoryList(nameCtegory)
-//         dispatch({ type: 'FETCH_SUCCESS', payload: data });
-//       } catch (err) {
-//         dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
-//       }  
-//     }
-//     fetchData();
-// } , [ ]);
 
 useEffect(() => {
     const fetchCategory = async () => {
@@ -81,7 +66,6 @@ useEffect(() => {
         const nameCtegory =  data.map((category) => category.name)
         console.log(nameCtegory)
         setCategoryList(nameCtegory)
-        // dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
       }  

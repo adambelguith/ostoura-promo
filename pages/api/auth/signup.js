@@ -3,7 +3,20 @@ import User from '../../../models/User';
 import db from '../../../utils/db';
 import nodemailer from 'nodemailer'
 
-
+async function sendMailAsync(transporter,user) {
+  try {
+    await transporter.sendMail({
+      from: '"QBS Quincaillerie ben saleh👥" <qbsdeveloper8@gmail.com>',
+      to: user.email,
+      subject: 'Email Verification',
+      html: `<h1>Please click on the following link to verify your email: </h1>
+        <p> ${process.env.BASE_URL}/verify-email/${user._id} </p>`,
+    });
+    return { message: 'Email sent successfully' };
+  } catch (error) {
+    throw new Error('Email sending failed');
+  }
+}
 async function handler(req, res) {
   if (req.method !== 'POST') {
     return;
@@ -54,22 +67,9 @@ const user = await newUser.save();
     }
   });
 
-async function sendMailAsync(transporter) {
-  try {
-    await transporter.sendMail({
-      from: '"QBS Quincaillerie ben saleh👥" <qbsdeveloper8@gmail.com>',
-      to: user.email,
-      subject: 'Email Verification',
-      html: `<h1>Please click on the following link to verify your email: </h1>
-        <p> ${process.env.BASE_URL}/verify-email/${user._id} </p>`,
-    });
-    return { message: 'Email sent successfully' };
-  } catch (error) {
-    throw new Error('Email sending failed');
-  }
-}
 
-const info = await sendMailAsync(transporter);
+
+const info = await sendMailAsync(transporter,user);
 
   res.status(201).send({
     info

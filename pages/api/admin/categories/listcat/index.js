@@ -1,5 +1,5 @@
 import { getSession } from 'next-auth/react';
-import {Category , Subcategory} from  '../../../../../models/Product';
+import {Category} from  '../../../../../models/Product';
 import db from '../../../../../utils/db';
 
 const handler = async (req, res) => {

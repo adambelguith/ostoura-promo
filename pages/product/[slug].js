@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Link from 'next/link';
 
-import React, { useContext, useState,useEffect } from 'react';
+import { useContext, useState,useEffect } from 'react';
 import { toast } from 'react-toastify';
 import Layout from '../../components/Layout';
 import {Product} from '../../models/Product';
@@ -25,53 +25,14 @@ export default function ProductScreen(props) {
   const { product,products } = props;
   const { state, dispatch } = useContext(Store)
   const [modalDefaultOpen, setModalDefaultOpen] = useState(false);
-
-  if (!product) {
-    return <Layout title="Produt Not Found" ><h1 className='flex w-full justify-center items-center text-3xl'>Produt Not Found</h1></Layout>;
-  }
-
   const existItem = state.cart.cartItems.find((x) => x.slug === product.slug);
-   const existcart = existItem?.quantity ? existItem.quantity : 0;
-  const [quantitys, setQuantityProduct] = useState(existcart )
-  const addToCartHandler = async ( ) => {
-    const existItem = state.cart.cartItems.find((x) => x.slug === product.slug);
-    const quantity = existItem ? existItem.quantity + quantitys : quantitys ? quantitys : 1 ;
-    const { data } = await axios.get(`/api/products/${product._id}`);
-
-    if (data.countInStock < quantity) {
-      return toast.error('Sorry. Product is out of stock');
-    }
-    setModalDefaultOpen(true)
-    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
+  const existcart = existItem?.quantity ? existItem.quantity : 0;
+  let [quantitys, setQuantityProduct] = useState(existcart);
   
-  };
+ 
 
-  const addToCartHandlerCart = async (product ,quantitys) => {
-    const existItem = state.cart.cartItems.find((x) => x.slug === product.slug);
-    const quantity = existItem ? existItem.quantity + quantitys : quantitys!=0 ? quantitys : 1 ;
-    const { data } = await axios.get(`/api/products/${product._id}`);
-
-    if (data.countInStock < quantity) {
-      return toast.error('Sorry. Product is out of stock');
-    }
-    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
-  };
-
-  const addToCartHandlerslide = async (product, quantityitem) => {
-    const existItem = state.cart.cartItems.find((x) => x.slug === product.slug);
-    const quantity = existItem ? existItem.quantity + quantityitem : quantityitem ? quantityitem : 1 ;
-    const { data } = await axios.get(`/api/products/${product._id}`);
-
-    if (data.countInStock < quantity) {
-      return toast.error('Sorry. Product is out of stock');
-    }
-    setModalDefaultOpen(true)
-   
-    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
-
-    toast.success('Product added to the cart');
-  };
-
+ 
+ 
   const [slidesPerView, setSlidesPerView] = useState(1);
   const [center , setCenter] = useState(false)
   useEffect(() => {
@@ -138,6 +99,22 @@ useEffect(()=>{
 
 },[imges, indeximage])
 
+const addToCartHandler = async ( ) => {
+  const existItem = state.cart.cartItems.find((x) => x.slug === product.slug);
+  const quantity = existItem ? existItem.quantity + quantitys : quantitys ? quantitys : 1 ;
+  const { data } = await axios.get(`/api/products/${product._id}`);
+
+  if (data.countInStock < quantity) {
+    return toast.error('Sorry. Product is out of stock');
+  }
+  setModalDefaultOpen(true)
+  dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
+
+};
+
+if (!product) {
+  return <Layout title="Produt Not Found" ><h1 className='flex w-full justify-center items-center text-3xl'>Produt Not Found</h1></Layout>;
+}
   return (
     
     <Layout title={product.name}>
@@ -370,7 +347,7 @@ useEffect(()=>{
             </div>
             <div className=" flex justify-between mx-2 p-6">
               <div className=''>
-            <Link href={"/cart"} >
+            <Link href={"/cart"} passHref>
               <div className='flex border-2 border-stone-300 cursor-pointer rounded-xl h-12 w-28 gap-x-0.5'>
                 <h1 className='mt-2 ml-2 text-blue-400'> go to cart</h1> <Icon icon="heroicons-outline:shopping-cart" color="#597787" width="25" height="20" className="mt-2 pt-25" />
                 

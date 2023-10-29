@@ -8,9 +8,7 @@ const handler = async (req, res) => {
     return res.status(401).send('Error: signin required');
   }
   const { user } = session;
-  if (req.method === 'GET') {
-    return getHandler(req, res, user);
-  } else if (req.method === 'PUT') {
+  if (req.method === 'PUT') {
     return delevred(req, res, user);
   } else if (req.method === 'DELETE') {
     return deleteHandler(req, res, user);

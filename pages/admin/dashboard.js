@@ -50,7 +50,7 @@ function reducer(state, action) {
   }
 }
 function AdminDashboardScreen() {
-  const [{ loading, error, summary, chartsDay }, dispatch] = useReducer(reducer, {
+  const [{ loading, error, summary }, dispatch] = useReducer(reducer, {
     loading: true,
     summary: { salesData: [] },
     error: '',

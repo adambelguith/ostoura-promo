@@ -1,5 +1,5 @@
 import { getSession } from 'next-auth/react';
-import {Product, Category, Subcategory} from '../../../../../models/Product';
+import {Product} from '../../../../../models/Product';
 import db from '../../../../../utils/db';
 import cloudinary from '../../cloudinary_config'
 

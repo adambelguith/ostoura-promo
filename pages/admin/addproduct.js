@@ -8,7 +8,6 @@ import Layout from '../../components/Layout';
 import { getError } from '../../utils/error';
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
-import { XCircleIcon } from '@heroicons/react/outline';
 
 
 function reducer(state, action) {
@@ -52,7 +51,7 @@ export default function AdminProductEditScreen() {
    const [selectedcategory, setSelectedcategory] = useState([])
    const [subcategoryList, setSubcategoryList] = useState([])
 
-  const [{ loading, error, loadingUpdate, loadingUpload, dataCategory}, dispatch] =
+  const [{loadingUpdate, loadingUpload}, dispatch] =
     useReducer(reducer, {
       loading: true,
       error: '',
@@ -132,19 +131,10 @@ useEffect(() => {
     setValue('image', imageFiles)
   
   },[imageFiles])
-  const getPublicIdFromUrl = (url) => {
-    const regex = /\/v\d+\/([^/]+)\.\w{3,4}$/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
-  };
-  
+
 
  const deleteimages = async (index) =>{
   const imageindex = imageFiles[index].split('/').pop().split('.')[0]
- 
- const {
-  data: { signature, timestamp },
- } = await axios('/api/admin/cloudinary-sign');
  const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/destroy`;
  try {
  const response = await fetch(url, {
