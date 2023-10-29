@@ -185,6 +185,10 @@ const changeNav =() =>{
      <NextNProgress options={{ showSpinner: false }} />
       <Head>
         <title>{title ? title =="Home Page" ? 'ostoura promo ': title + ' - ostoura' : 'ostoura'}</title>
+        <meta property="og:title" content="The Rock" />
+        <meta property="og:type" content="video.movie" />
+        <meta property="og:url" content="https://www.imdb.com/title/tt0117500/" />
+        <meta property="og:image" content="https://ia.media-imdb.com/images/rock.jpg" />
         <meta name="Ostoura" content="promo product" />
         <meta name={title} content="ostoura promo " />
         <meta name="author" content="Adam bel" />

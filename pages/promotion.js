@@ -34,7 +34,7 @@ const addToCartHandler = async (product) => {
     router.push(`/promotion?page=${newPage}`);
   };
   return (
-    <Layout title="QBS Promotion">
+    <Layout title="Ostoura Promotion">
        <div className="products-heading">
       <h2 className='text-[#f84e53]'> Promotion Produit </h2>
     </div>
