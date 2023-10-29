@@ -21,9 +21,7 @@ export default function ProductItem({ product, addToCartHandler }) {
       </Link>
       <div className="flex flex-col items-center justify-center p-2 ">
         <Link href={`/product/${product.slug}`}>
-          <a>
             <h2 className="text-lg product-name text-center font-mono font-extrabold  hover:font-bold capitalize">{product.name.length > 45 ?(product.name.slice(0,45).split(' ').slice(0,-1).join(' ').concat(" ...")):(product.name) }</h2>
-          </a>
         </Link>
 
 
