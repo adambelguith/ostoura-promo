@@ -43,7 +43,6 @@ export default function Layout({ title, children }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isHoveredearch, setIsHoveredSearch] = useState(false);
   const [showbutton, setShowButton] = useState(false);
-  const [modalDefaultOpen, setModalDefaultOpen] = useState(false);
   useEffect(() => {
     setCartItemsCount(cart.cartItems.length);
   }, [cart.cartItems]);
@@ -68,6 +67,7 @@ export default function Layout({ title, children }) {
         const { data } = await axios.get(`/api/categories/listcat`);
         setCategories(data)
       } catch (err) {
+        console.log(err)
       }
     };
     fetchData()
@@ -79,6 +79,7 @@ export default function Layout({ title, children }) {
           const { data } = await axios.get(`/api/categories/listsub/${selectedCategory}`);
           setSubcategoryData(data)
         } catch (err) {
+          console.error(err)
         }
       };
       fetchData()
@@ -89,6 +90,7 @@ export default function Layout({ title, children }) {
           const { data } = await axios.get(`/api/categories/listsub/${selectedCategoryresp}`);
           setSubcategoryData(data)
         } catch (err) {
+          console.log(err)
         }
       };
       fetchData()
@@ -271,7 +273,7 @@ const changeNav =() =>{
             </form>
 
             <div className='flex flex-row'>
-              <Link href="/cart">
+              <Link href="/cart" passHref>
                 <button className="mr-2 flex space-x-0"  
                 onMouseEnter={() => setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
@@ -339,7 +341,7 @@ const changeNav =() =>{
                 </Menu>
                 
               ) : (
-                <Link href="/login">
+                <Link href="/login" passHref>
                   <h1 className="text-blue-600 text-xl p-2 cursor-pointer">Login</h1>
                 </Link>
               )}
@@ -367,7 +369,7 @@ const changeNav =() =>{
           ))}
           {categories.length > 8 && (
           <li className='cursor-pointer hover:scale-110'>
-            <Link href='/search'>
+            <Link href='/search' passHref>
               <div className='flex flex-row'>
               <p className='text-slate-50  mt-2 font-medium'>All Categories</p>
               <div className='next-cat h-4 w-4 mt-2'></div>
@@ -431,9 +433,9 @@ const changeNav =() =>{
                         <div className='shop-now'> <Link href={`/product/${product.slug}`} className="shop-now"> Detail </Link></div>
                        
                       </div>
-                      <Link href={`/product/${product.slug}`} >
+                      <Link href={`/product/${product.slug}`} passHref >
                       <div className='card-product-image '>
-                        <img src={product.image[0]} className='swiper-image-card rounded-3xl' />                      
+                        <img src={product.image[0]} alt={product.name} className='swiper-image-card rounded-3xl' />                      
                       </div>
                       </Link>
                     </div>
@@ -457,7 +459,7 @@ const changeNav =() =>{
             <a href="https://www.facebook.com/qbsquincailleriebensalahsayada/" className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-800 transition duration-300 ease-in-out facebook"><Icon icon="tabler:brand-facebook" color="mintcream" className="icons fab fa-facebook-f text-white text-2xl" /></a> 
             <a href="https://www.instagram.com/societe_qbs/" className="instgram w-12 h-12 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-800 transition duration-300 ease-in-out"><Icon icon="bi:instagram" color="mintcream" className="icons fab fa-instagram text-white text-2xl" /></a>
           </div>  */}
-        <Link href="/">
+        <Link href="/" passHref>
             <div className='pb-6'>
             <img
             src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1698403308/logo/logov3_xmybvp.png`}
@@ -473,7 +475,7 @@ const changeNav =() =>{
         </footer>
         <div className='fixed bottom-4 right-6 cursor-pointer hover:scale-125 z-50' >
         <a href="https://wa.me/92432442" target="_blank" rel="noopener noreferrer">
-          <Image src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1698489964/logo/whatsapp_cztiv1_hfc2hp.png`} height={64} width={68} />
+          <Image src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1698489964/logo/whatsapp_cztiv1_hfc2hp.png`} height={64} width={68} alt='whatsapp-logo' />
         </a>
         </div>
        

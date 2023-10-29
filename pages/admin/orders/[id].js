@@ -61,7 +61,6 @@ function OrderScreen() {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
   } = useForm();
 
   useEffect(() => {
@@ -181,7 +180,7 @@ const getCurrentDate = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orderItems.map((item, index) => (
+                  {orderItems.map((item) => (
                     <tr key={item._id} className="border-b">
                       <td>
                         <Link href={`/product/${item.slug}`}>

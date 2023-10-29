@@ -8,12 +8,7 @@ import { useEffect, useReducer ,useState} from 'react';
 import { toast } from 'react-toastify';
 import Layout from '../../components/Layout';
 import { getError } from '../../utils/error';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import db from '../../utils/db'
-import Order from '../../models/Order'
-import User  from '../../models/User'
-// import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-// import PdfDownload from '../../components/PdfDownload';
+
 
 function reducer(state, action) {
   switch (action.type) {
@@ -42,7 +37,7 @@ function reducer(state, action) {
       state;
   }
 }
-function OrderScreen({user}) {
+function OrderScreen() {
 
   const { query } = useRouter();
   const router = useRouter();
@@ -124,261 +119,7 @@ function OrderScreen({user}) {
       window.removeEventListener('resize', updateProductPerView);
     };
   }, []);
-  async function generateInvoicePDF() {
-    try {
-      function createPage(pdfDoc, pageNumber) {
-        const page = pdfDoc.addPage([794, 1123]);
-        const { width, height } = page.getSize();
-      
-        // Add page number
-        page.drawText(`Page ${pageNumber}`, {
-          x: 50,
-          y: 50,
-          size: 12,
-        });
-      
-        return { page, width, height };
-      }
-      const pdfDoc = await PDFDocument.create();
-      
-  let pageNumber = 1;
-  let { page, width, height } = createPage(pdfDoc, pageNumber);
-
-      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-      function createNewPage() {
-        pageNumber++;
-        ({ page, width, height } = createPage(pdfDoc, pageNumber));
-        currentY = height - rowHeight - 100; 
-      }
-       const logoImageUrl = `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1694431587/logo/logo_png_rvbzka.png`; 
-      const response = await axios.get(logoImageUrl, { responseType: 'arraybuffer' });
-      const logoImage = await pdfDoc.embedPng(response.data);
-      page.drawImage(logoImage, {
-        x: 50,
-        y: height - 70,
-        width: 100, 
-        height: 50, 
-      });
-      page.drawText('Quincaillerie Ben Salah', {
-        x: width - 600,
-        y: height - 60,
-        size: 28,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
-
-      page.drawText('Adresse: sayda, sousse, ksour essef \n Numero : 58 300 271 - 58 300 272 \n Mat Fisc : 1037441CBC000', {
-        x: width - 300,
-        y: height - 110,
-        size: 16,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
-
-      page.drawText('Facture ', {
-        x: 50,
-        y: height - 120,
-        size: 30,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
-
-      page.drawText(`Facture ID:  ${orderId}`, {
-        x: 50,
-        y: height - 140, 
-        size: 16,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
-      
-      page.drawRectangle({
-        x: 50,
-        y: height - 220,
-        width: width - 500,
-        height: 70, 
-        borderColor: rgb(0, 0, 0),
-        borderWidth: 1,
-        borderRadi:80, 
-      });
-      page.drawText(`Client:    ${ user ? user.name: "Passager"}`, {
-        x: 70, 
-        y: height - 180, 
-        size: 16,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
-      
-      page.drawText(`Date :   ${order.createdAt.split('T')[0]}`, {
-        x: 70, 
-        y: height - 200, 
-        size: 16,
-        font: helveticaFont,
-        color: rgb(0, 0, 0),
-      });
   
-
-      
- const tableX = 50;
- const tableY = height - 300; 
- const tableWidth = width-15; 
- const rowHeight = 40;
- const cellPadding = 25; 
- const tableHeader = [' Article ', ' Qté ', ' Prix ' , ' Total '];
-
- const borderColor = rgb(0, 0, 0);
- const headerBackgroundColor = rgb(0.8, 0.8, 0.8);
- const cellBackgroundColor = rgb(0.95, 0.95, 0.95);
-
- const itemColumnWidth = 450;
-
-const remainingColumnWidth  = ((tableWidth - itemColumnWidth) / (tableHeader.length - 1)) - 35;
-
-let cellX = tableX + cellPadding -25;
-var currentY = tableY - rowHeight;
-const headerY = tableY + cellPadding + rowHeight / 2;
-
-for (const [index, header] of tableHeader.entries()) {
-  const columnWidth = index === 0 ? itemColumnWidth : remainingColumnWidth ;
-  page.drawRectangle({
-    x: cellX -2,
-    y: tableY + 28,
-    width: columnWidth,
-    height: rowHeight,
-    borderColor,
-    color: headerBackgroundColor,
-    borderWidth: 2,
-  });
-
-  page.drawText(header, {
-    x: cellX + cellPadding / 2,
-    y: headerY,
-    size: 12,
-    font: helveticaFont,
-    color: rgb(0, 0, 0),
-  });
-  cellX += columnWidth;
-}
-for (const item of order.orderItems) {
-  cellX = tableX + cellPadding - 27;
-  if (currentY - rowHeight < 50) {
-    createNewPage(); 
-  }
-  for (const [index, value] of Object.entries([
-    item.name.length > 80 ? (item.name.slice(0, 80).split(' ').slice(0, -1).join(' ').concat(" ...")) : (item.name),
-    item.quantity.toString(),
-    `${item.price.toString()}`,
-    `${(item.quantity * item.price).toFixed(2).toString()}`,
-  ])) {
-    const columnWidth = index === '0' ? itemColumnWidth : remainingColumnWidth;
-    page.drawRectangle({
-      x: cellX,
-      y: currentY + 26,
-      width: columnWidth,
-      height: rowHeight,
-      borderColor,
-      color: cellBackgroundColor,
-      borderWidth: 1,
-    });
-
-    page.drawText(value, {
-      x: cellX + cellPadding / 2, 
-      y: currentY + cellPadding + rowHeight / 2,
-      size: 12,
-      font: helveticaFont,
-      color: rgb(0, 0, 0),
-    });
-    cellX += columnWidth;
-  }
-    currentY -= rowHeight;
-}
-
-const totalText = ` ${parseFloat(order.totalPrice.toFixed(2)).toString()}`; 
-page.drawText("Total : ", {
-  x: tableX + 420,
-  y: currentY +28 , 
-  size: 30,
-  font: helveticaFont,
-  color: rgb(0, 0, 0),
-});
- page.drawRectangle({
-  x: tableWidth - (remainingColumnWidth *2) - 57,
-  y: currentY+10 ,
-  width: remainingColumnWidth * 2 ,
-  height: rowHeight +15,
-  borderColor,
-  color: cellBackgroundColor,
-  borderWidth: 1,
-});
-
-
- page.drawText(totalText, {
-   x: tableWidth - (remainingColumnWidth *2) - 20,
-   y: currentY+ 25, 
-   size: 24,
-   font: helveticaFont,
-   color: rgb(0, 0, 0),
- });
-
-if (currentY < 250) {
-  createNewPage(); 
-}
-
-page.drawText("Laivraison : ", {
-  x: tableX +15,
-  y: currentY-10 , 
-  size: 30,
-  font: helveticaFont,
-  color: rgb(0, 0, 0),
-});
-
-page.drawRectangle({
-  x: 50,
-  y: currentY- 180,
-  width: width - 300,
-  height: 150, 
-  borderColor: rgb(0, 0, 0),
-  borderWidth: 0.5,
-  borderRadi:80, 
-});
-
- const addressText =`Nom: \t ${order.shippingAddress.fullName},
- Numéro: \t  ${order.shippingAddress.phone},
- Adresse: `;
-
-const addressnom = ` \t \t \t \t ${order.shippingAddress.address},
-\t \t \t ${order.shippingAddress.city},  ${order.shippingAddress.postalCode}.`
- page.drawText(addressText, {
-   x: tableX +15,
-   y: currentY- 50 , 
-   size: 18,
-   font: helveticaFont,
-   color: rgb(0, 0, 0),
- });
- page.drawText(addressnom, {
-  x: tableX +30,
-  y: currentY- 97 , 
-  size: 12,
-  font: helveticaFont,
-  color: rgb(0, 0, 0),
-});
-
-
-
-      const pdfBytes = await pdfDoc.save();
-      const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
-
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = pdfUrl;
-      downloadLink.download = `invoice_${orderId}.pdf`;
-      downloadLink.click();
-
-      toast.success('Facture générée avec succès');
-    } catch (err) {
-      toast.error(getError(err));
-    }
-  }
 
 
 
@@ -506,12 +247,6 @@ const addressnom = ` \t \t \t \t ${order.shippingAddress.address},
                 </li>           
               </ul>
             </div>
-            <button
-                    className="button-cart w-1/12 md:w-3/12 mt-5 "
-                    onClick={generateInvoicePDF}
-                  >
-                    <div className='imprime relative right-6'></div>
-                  </button>
           </div>
         </div>
       )}
@@ -522,19 +257,3 @@ const addressnom = ` \t \t \t \t ${order.shippingAddress.address},
 OrderScreen.auth = true;
 export default OrderScreen;
 
-
-export async function getServerSideProps({query}) {
-  await db.connect();
- const order = query.id
-  const orderId = await Order.findById(order)
-  let user
-  if(orderId.user){
-    user = await User.findById(orderId.user)
-  }
-
-  return {
-    props: {
-      user: user? JSON.parse(JSON.stringify(user)) :null,
-    },
-  };
-}

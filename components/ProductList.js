@@ -3,13 +3,13 @@ import Link from 'next/link';
 import React, {useState} from 'react';
 
 export default function ProductItem({ product, addToCartHandler }) {
-  const [quantity, setQuantityProduct] = useState(0)
+  let [quantity, setQuantityProduct] = useState(0)
 
   return (
     <div className="product-slide w-56 h-96">
       
         <div>
-        <Link href={`/product/${product.slug}`}>
+        <Link href={`/product/${product.slug}`} passHref>
         <div className='flex w-full justify-center items-center'>
           <img
             src={product.image[0]}

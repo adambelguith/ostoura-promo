@@ -66,20 +66,6 @@ export default function Home({ products, mostSell, newest, promotion }) {
     toast.success('Product added to the cart');
   };
 
-  const addToCartHandlerCart = async (product, quantityitem) => {
-    const existItem = cart.cartItems.find((x) => x.slug === product.slug);
-    const quantity = existItem ? existItem.quantity + quantityitem : quantityitem!=0? quantityitem : 1;
-    const { data } = await axios.get(`/api/products/${product._id}`);
-
-    if (data.countInStock < quantity) {
-      return toast.error('Sorry. Product is out of stock');
-    }
-  
-    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
-
-    toast.success('Product added to the cart');
-  };
-
 
   return (
     <Layout title="Home Page">
@@ -140,7 +126,7 @@ export default function Home({ products, mostSell, newest, promotion }) {
       </div>
      
       <div className='flex w-full justify-center items-center '>
-      <Link href={"/promotion"} >
+      <Link href={"/promotion"} passHref>
       <div className='py-4 px-8 left-1/2 border-4 border-red-700 rounded-lg hover:border-[#d64545e0] hover:scale-105 hover:cursor-pointer group '>
         <button className=' '>
           <p className='text-red-700 group-hover:text-[#ee922ae0] '>Voir list des promotions </p>
@@ -177,7 +163,7 @@ export default function Home({ products, mostSell, newest, promotion }) {
       </div>
      
       <div className='flex w-full justify-center items-center '>
-      <Link href={"/search"} >
+      <Link href={"/search"} passHref>
       <div className='py-4 px-8 left-1/2 border-4 border-blue-700 rounded-lg hover:border-[#d64545e0] hover:scale-105 hover:cursor-pointer group '>
         <button className=' '>
           <p className='text-blue-700 group-hover:text-[#ee922ae0] '>Voir plus Recent products </p>
@@ -210,7 +196,7 @@ export default function Home({ products, mostSell, newest, promotion }) {
         ))}
       </div>
       <div className='flex w-full justify-center items-center '>
-      <Link href={"/search"} >
+      <Link href={"/search"} passHref>
       <div className='py-4 px-8 left-1/2 border-4 border-blue-700 rounded-lg hover:border-[#d64545e0] hover:scale-105 hover:cursor-pointer group'>
         <button className=' '>
           <p className='text-blue-700 group-hover:text-[#ee922ae0]'>Voir plus Recent products </p>
@@ -265,7 +251,7 @@ export default function Home({ products, mostSell, newest, promotion }) {
             </div>
             <div className=" flex justify-between mx-2 p-6">
               <div className='hover:scale-x-110'>
-            <Link href={"/cart"} >
+            <Link href={"/cart"} passHref>
               <div className='flex border-2 border-stone-300 cursor-pointer rounded-xl h-12 w-28 gap-x-0.5 bg-[#079afc]'>
                 <h1 className='mt-2 ml-2 text-[#eee]'> go to cart</h1> <Icon icon="heroicons-outline:shopping-cart" color="#eee" width="25" height="20" className="mt-2 pt-25" />
                 
