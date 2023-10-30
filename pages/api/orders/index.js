@@ -12,11 +12,14 @@ const handler = async (req, res) => {
     await db.connect();
     users =  await User.findOne({ email: user.email });
   }
+
+  console.log(session)
   
   const newOrder = new Order({
     ...req.body,
     user: users ? users._id : null,
   });
+  console.log(users)
  if(newOrder){
   req.body.orderItems.map(async (item) => {
     const product = await Product.findById(item._id);
