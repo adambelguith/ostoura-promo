@@ -69,11 +69,8 @@ const user = await newUser.save();
 
 
 
-const info = await sendMailAsync(transporter,user);
+ await sendMailAsync(transporter,user);
 
-  res.status(201).send({
-    info
-  });
   await db.disconnect();
   res.status(201).send({
     message: 'Created user!',

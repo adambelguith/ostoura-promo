@@ -242,14 +242,13 @@ const changeNav =() =>{
        )}
               <div className='cursor-pointer'>
             <Link href="/" className="relative cursor-pointer ">
-              <div className='relative flex space-x-1 z-50'>
                 <Image
-                src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1698403308/logo/logov4_j2n6lz.png`}
+                className='w-48 h-32 '
+                src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1698403308/logo/infini_text_pmwqbt.png`}
                 alt="logo"
-                width={95}
+                width="164px"
                 height={64}
                 />
-              </div>
             </Link>
             </div>
           </div>

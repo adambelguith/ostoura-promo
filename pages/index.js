@@ -65,6 +65,21 @@ export default function Home({ products, mostSell, newest, promotion }) {
 
     toast.success('Product added to the cart');
   };
+  const addToCartHandlerslide = async (product, quantityitem) => {
+    const existItem = state.cart.cartItems.find((x) => x.slug === product.slug);
+    const quantity = existItem ? existItem.quantity + quantityitem : quantityitem ? quantityitem : 1 ;
+    const { data } = await axios.get(`/api/products/${product._id}`);
+
+    if (data.countInStock < quantity) {
+      return toast.error('Sorry. Product is out of stock');
+    }
+    setModalDefaultOpen(true)
+   
+    dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
+
+    toast.success('Product added to the cart');
+  };
+
 
 
   return (
@@ -235,13 +250,13 @@ export default function Home({ products, mostSell, newest, promotion }) {
                     <PromotionProduct
                       key={product._id}
                       product={product}
-                      addToCartHandler={addToCartHandler}
+                      addToCartHandler={addToCartHandlerslide}
                     />
                   ):(
                     <ProductItem
                       key={product._id}
                       product={product}
-                      addToCartHandler={addToCartHandler}
+                      addToCartHandler={addToCartHandlerslide}
                     />
                   )}  
                   </div>

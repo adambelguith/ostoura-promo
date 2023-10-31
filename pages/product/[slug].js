@@ -112,6 +112,22 @@ const addToCartHandler = async ( ) => {
 
 };
 
+const addToCartHandlerslide = async (product, quantityitem) => {
+  const existItem = state.cart.cartItems.find((x) => x.slug === product.slug);
+  const quantity = existItem ? existItem.quantity + quantityitem : quantityitem ? quantityitem : 1 ;
+  const { data } = await axios.get(`/api/products/${product._id}`);
+
+  if (data.countInStock < quantity) {
+    return toast.error('Sorry. Product is out of stock');
+  }
+  setModalDefaultOpen(true)
+ 
+  dispatch({ type: 'CART_ADD_ITEM', payload: { ...product, quantity } });
+
+  toast.success('Product added to the cart');
+};
+
+
 if (!product) {
   return <Layout title="Produt Not Found" ><h1 className='flex w-full justify-center items-center text-3xl'>Produt Not Found</h1></Layout>;
 }
@@ -331,13 +347,13 @@ if (!product) {
                     <PromotionProduct
                       key={product._id}
                       product={product}
-                      addToCartHandler={addToCartHandler}
+                      addToCartHandler={addToCartHandlerslide}
                     />
                   ):(
                     <ProductList
                       key={product._id}
                       product={product}
-                      addToCartHandler={addToCartHandler}
+                      addToCartHandler={addToCartHandlerslide}
                     />
                   )}  
                   </div>
