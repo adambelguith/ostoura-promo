@@ -43,6 +43,7 @@ export default function LoginScreen() {
       if (result.error) {
         toast.error(result.error);
       }
+      router.push('/');
       setLoading(false);
     } catch (err) {
       setLoading(false);
