@@ -10,7 +10,7 @@ async function sendMailAsync(transporter,user) {
       to: user.email,
       subject: 'Email Verification',
       html: `<h1>Please click on the following link to verify your email: </h1>
-        <p> ${process.env.BASE_URL}/verify-email/${user._id} </p>`,
+        <p> ${process.env.NEXTAUTH_URL}/verify-email/${user._id} </p>`,
     });
     return { message: 'Email sent successfully' };
   } catch (error) {
