@@ -56,9 +56,10 @@ useEffect(()=>{
       setError(err);
     }
   };
-  const handleGoogleSignIn = async () => {
-   await signIn('google');
-  };
+  // const handleGoogleSignIn = async () => {
+  //  await signIn('google');
+  // };
+
   return (
     <Layout title="Login">
       <form
@@ -110,12 +111,12 @@ useEffect(()=>{
           <h1 className='text-blue-600'><Link href={`/register`}>Register</Link></h1>
         </div>
       </form>
-      <div className='flex w-full justify-center items-center mb-6'>
+      {/* <div className='flex w-full justify-center items-center mb-6'>
         <button onClick={handleGoogleSignIn} className='flex items-center gap-4 shadow-xl rounded-lg pl-3'>
           <img src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1695820502/logo/google_gxukdz.png`} height={30} width={30} />
           <span className='bg-blue-500 text-white px-4 py-3'>sign in with google</span>
         </button>
-      </div>
+      </div> */}
     </Layout>
   );
 }
