@@ -69,7 +69,7 @@ const user = await newUser.save();
 
 
 
- await sendMailAsync(transporter,user);
+const info= await sendMailAsync(transporter,user);
 
   await db.disconnect();
   res.status(201).send({
