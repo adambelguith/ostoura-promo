@@ -10,7 +10,7 @@ export default function VerifieScreen(props) {
  const user = props;
   return (
     <Layout title={"vérifier account"}>
-        {user == null ? (<div className='flex flex-col items-center justify-center mt-24 lg:mt-64 gap-12 '>
+        {user ?(<div className='flex flex-col items-center justify-center mt-24 lg:mt-64 gap-12 '>
         <p className='text-center text-2xl text-[#089203] '>votre courrier est vérifié maintenant!</p>
         <Link href='/' className='text-center text-white ' passHref>
             <div className='h-12 w-24 bg-blue-600 rounded-lg '>
