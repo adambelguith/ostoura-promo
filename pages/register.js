@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useForm } from 'react-hook-form';
 import Layout from '../components/Layout';
@@ -10,7 +10,7 @@ import axios from 'axios';
 
 export default function LoginScreen() {
   const { data: session } = useSession();
-
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { redirect } = router.query;
 
@@ -28,6 +28,7 @@ export default function LoginScreen() {
   } = useForm();
   const submitHandler = async ({ name, email, password }) => {
     try {
+      setLoading(true);
       await axios.post('/api/auth/signup', {
         name,
         email,
@@ -42,7 +43,9 @@ export default function LoginScreen() {
       if (result.error) {
         toast.error(result.error);
       }
+      setLoading(false);
     } catch (err) {
+      setLoading(false);
       toast.error(getError(err));
     }
   };
@@ -129,7 +132,10 @@ export default function LoginScreen() {
         </div>
 
         <div className="mb-4 ">
-          <button className="primary-button">Register</button>
+          <button 
+          className="primary-button"
+          disabled={loading}
+          >{loading ? 'Loading...' : 'Register'}</button>
         </div>
         <div className="mb-4 ">
           Have an account !&nbsp;
