@@ -244,10 +244,10 @@ const changeNav =() =>{
             <Link href="/" className="relative cursor-pointer ">
                 <Image
                 className='w-48 h-32 '
-                src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1698403308/logo/infini_text_pmwqbt.png`}
+                src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/v1698403308/logo/infinitry_sivkfv.png`}
                 alt="logo"
-                width="164px"
-                height={64}
+                width={100}
+                height={50}
                 />
             </Link>
             </div>
