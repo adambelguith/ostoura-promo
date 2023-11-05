@@ -6,9 +6,9 @@ html,
 body {
   padding: 0;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+  font-family:  Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-    background-color: #d1c6c6da;
+    background-color: #efecec;
 }
 
 a {
@@ -24,7 +24,7 @@ a {
 }
 
 .primary-button {
-  @apply rounded bg-[#079afc] py-2 px-4 shadow outline-none hover:bg-amber-400  active:bg-amber-500 text-white hover:text-[#0cfc14] ;
+  @apply rounded bg-[#079afc] py-2 px-4 shadow outline-none hover:bg-amber-400  active:bg-amber-500 text-white hover:text-[#fafcfa] ;
 }
 .default-button {
   @apply rounded bg-gray-100 py-2  px-4 text-black shadow outline-none hover:bg-gray-200  active:bg-gray-300;
@@ -51,7 +51,7 @@ textarea {
 
 .products-heading{
   text-align: center;
-  margin: 3rem 0px 40px;
+  margin: 2.2rem 0px 40px;
  color: #324d67;
 
 }
@@ -80,24 +80,16 @@ textarea {
  }
 
  .product-card:hover{
-  transform: scale(1.1,1.1)
-}
-.product-slide{
-  cursor: pointer;
-  transform: scale(1, 1);
-  transition: transform 0.5s ease;
- color: #324d67;
-  height: 100%;
-
-}
-.product-slide:hover{
-  transform: scale(1.1,1.1)
+  transform: scale(1.1,1.1);
+  box-shadow: 3px 7px 20px 8px rgba(123,91,91,0.47);
+  border-radius: 10px;
+  background-color: #a6d6e4a6;
 }
 
 
 .product-image{
   border-radius: 15px;
- background-color: #ebebeb;
+ /* background-color: #ebebeb; */
   transform: scale(1, 1);
   transition: transform 0.5s ease;
 }
@@ -141,8 +133,8 @@ cursor: pointer;
 z-index: 10000
 }
 .button-cart:hover{
-  background-color: #EDCE51;
-  color: #0cfc14;
+  background-color: #ffc800;
+  color: #f5f9f6;
 }
 
 .imprime{
@@ -165,7 +157,7 @@ z-index: 10000
     .lefts-item {
         display: flex;
         max-height: 100vh;
-    flex-direction: column-reverse !important;
+    flex-direction: column !important;
     justify-content: center;
     width: auto;
     padding: 1rem;
@@ -260,7 +252,7 @@ z-index: 10000
     }
 
     .count-qty{
-      font-size: 25px;
+      font-size: 18px;
       color: #151618;
       font-family: 'Gill Sans', sans-serif;
     }
@@ -269,8 +261,8 @@ z-index: 10000
       margin-top: 0px;
     }
     .product-detail-desc .price{
-      font-weight: 700 ;
-      font-size: 26px;
+      font-weight: 500 ;
+      font-size: 18px;
       margin-top: 30px;
       color:#3f4e64;
     }
@@ -901,7 +893,7 @@ z-index: 10000
     border-top: 0.2rem solid #eee;
 }
 .block-category{
-  background-color: #d13838;
+  background-color: #01377d;
 }
 
 @media (max-width: 1000px) {

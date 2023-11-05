@@ -82,8 +82,8 @@ export async function getServerSideProps({query}) {
     const pageSize = query.pageSize || PAGE_SIZE;
     const page = query.page || 1;
     await db.connect();
-    const allpromotion = await Product.find({ promotion: { $gte: 16 } }).sort({promotion:-1})
-    const promotion = await Product.find({ promotion: { $gte: 16 } }).sort({promotion:-1}).skip(pageSize * (page - 1)).limit(pageSize).lean();
+    const allpromotion = await Product.find({ promotion: { $gte: 1 } }).sort({promotion:-1})
+    const promotion = await Product.find({ promotion: { $gte: 1 } }).sort({promotion:-1}).skip(pageSize * (page - 1)).limit(pageSize).lean();
   await db.disconnect();
 
   return {

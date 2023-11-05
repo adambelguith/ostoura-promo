@@ -144,6 +144,35 @@ if (!product) {
       <div>
       {zoomEnabled ? (
         <div className="lefts-item ">
+       
+        <div className="left_2">
+          {indeximage > product.image.length ? (
+            <video width='100%' height='100%' controls>
+            <source src={product.video} type='video/mp4' />
+          </video>
+          ):(<ReactImageMagnify
+            className='custom-image-magnify '
+              {...{
+                  smallImage: {
+                      alt: product.name,
+                      width:500,
+                      height:500,
+                      // isFluidWidth: true,
+                      src: imges,
+                  },
+                  largeImage: {
+                      src: imges,
+                      width: 2000,
+                      height: 2000,
+                  },
+                  enlargedImageContainerDimensions: {
+                      width: '250%',
+                      height: '210%',
+                  },
+              }}
+          />)}
+            
+        </div>
         <div className="grid grid-cols-8 gap-2">
             {product.image.map((image, i) => (
                 <div
@@ -161,32 +190,6 @@ if (!product) {
               </video>
               </div>
                )}
-        </div>
-        <div className="left_2">
-          {indeximage > product.image.length ? (
-            <video width='100%' height='100%' controls>
-            <source src={product.video} type='video/mp4' />
-          </video>
-          ):(<ReactImageMagnify
-            className='custom-image-magnify '
-              {...{
-                  smallImage: {
-                      alt: '',
-                      isFluidWidth: true,
-                      src: imges,
-                  },
-                  largeImage: {
-                      src: imges,
-                      width: 2000,
-                      height: 2000,
-                  },
-                  enlargedImageContainerDimensions: {
-                      width: '250%',
-                      height: '210%',
-                  },
-              }}
-          />)}
-            
         </div>
     </div>
      
@@ -227,13 +230,13 @@ if (!product) {
       )}
       </div>
       
-        <div className="product-detail-desc relative flex flex-col w-full justify-center items-center">
-          <p className='text-xl'>{product.name}</p>
+        <div className="product-detail-desc relative flex flex-col w-full justify-center items-center bg-white rounded-lg border-2 border-[#667e9eb1]">
+          <p className='text-4xl font-[700] '>{product.name}</p>
           
           <div className="price flex ">Price: {product.promotion ? (<div className='ml-2'><span>{parseFloat((product.price - ((product.price*product.promotion)/100)).toFixed(2))}</span><span className='line-through text-sm ml-2'>{product.price}</span></div>):(<span>{product.price}</span>)}  <span className=' ml-2'>TND</span></div>
-          {product.promotion && (<div className='text-lg text-red-500'>Promotion {product.promotion}%</div>)}
+          {/* {product.promotion && (<div className='text-lg text-red-500'>Promotion {product.promotion}%</div>)} */}
           <div className="quantity">
-            <h3 >Quantity: </h3> <h2 className='count-qty'> {product.countInStock > 0 ? product.countInStock : 'Unavailable'} </h2>
+            <h3 >Quantity: </h3> <h3 className='count-qty'> {product.countInStock > 0 ? product.countInStock : 'Unavailable'} </h3>
             <div className='flex ml-6 ' ><p className='font-thin text-md whitespace-nowrap'>selling product: </p> <p className='ml-2 text-lg text-green-400'>{product.sell}</p></div>
           </div>
           
@@ -281,6 +284,7 @@ if (!product) {
   <div className='flex w-full  justify-center items-center my-12'>
     <h1 className='text-4xl text-[#031927]'> Recommend products </h1>
   </div>
+  <div className='bg-white rounded-lg p-4'>
   <Swiper
     modules={[Navigation, Pagination, Scrollbar, A11y,Autoplay]}
     navigation={true}
@@ -295,7 +299,7 @@ if (!product) {
   >
     {products.map((product, index) => (         
     <SwiperSlide key={index}>
-      <div className='ml-16 sm:ml-0'>
+      <div className='ml-16 sm:ml-0 '>
       {product.promotion ? (
         <PromotionProduct
           key={product._id}
@@ -315,7 +319,7 @@ if (!product) {
     )
  )}
   </Swiper>
-
+  </div>
 
 
 {modalDefaultOpen && (

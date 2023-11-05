@@ -198,8 +198,8 @@ const changeNav =() =>{
       <ToastContainer position="bottom-center" limit={1} />
      
       <div className="flex min-h-screen flex-col justify-between ">
-        <header>
-          <nav className="flex h-24 items-center mx-2 justify-between mb-8 md:mb-4 mt-3">
+        <header className='bg-white'>
+          <nav className="flex h-24 items-center mx-2 justify-between mb-8 md:mb-4 mt-3 ">
           <div className={'flex flex-row' } >
           {showbutton && title !="search" && (<button className='' onClick={changeNav} > {isCategorySvg ? (<div className='closeCtegories' onClick={() => setSelectedCategoryresp(null)}></div>):(<div className='openCategories w-10 '></div>) } </button>)} 
               {isCategorySvg && (
@@ -353,8 +353,7 @@ const changeNav =() =>{
           </nav>
          
         </header>
-         {title =="Home Page" && (
-          <>
+         
           <div className='block-category h-10  content-center'>
           <ul className='list-category ' ref={componentContainerRef}>
             {categories.slice(0, 8).map((category, index) =>(
@@ -396,6 +395,8 @@ const changeNav =() =>{
                 </ul>
               </div>
             )}
+            {title =="Home Page" && (
+          <>
           <div className='main-slider ' >
              <Swiper
               modules={[Navigation, Pagination, Scrollbar, A11y,Autoplay]}
@@ -458,10 +459,10 @@ const changeNav =() =>{
         <main className="mx-4 sm:mx-12 mt-4 mb-4 pb-10">{children}</main>
         
         <footer className="relative mt-auto flex flex-row h-28 pt-10 mt-4 md:justify-between items-center shadow-inner ">
-          {/* <div className="flex flex-row space-x-4 justify-center lg:p-16 p-8 ">
-            <a href="https://www.facebook.com/qbsquincailleriebensalahsayada/" className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-800 transition duration-300 ease-in-out facebook"><Icon icon="tabler:brand-facebook" color="mintcream" className="icons fab fa-facebook-f text-white text-2xl" /></a> 
-            <a href="https://www.instagram.com/societe_qbs/" className="instgram w-12 h-12 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-800 transition duration-300 ease-in-out"><Icon icon="bi:instagram" color="mintcream" className="icons fab fa-instagram text-white text-2xl" /></a>
-          </div>  */}
+          <div className="flex flex-row space-x-4 justify-center lg:p-16 p-8 ">
+            <a href="#" className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-800 transition duration-300 ease-in-out facebook"><Icon icon="tabler:brand-facebook" color="mintcream" className="icons fab fa-facebook-f text-white text-2xl" /></a> 
+            <a href="#" className="instgram w-12 h-12 bg-pink-600 rounded-full flex items-center justify-center hover:bg-pink-800 transition duration-300 ease-in-out"><Icon icon="bi:instagram" color="mintcream" className="icons fab fa-instagram text-white text-2xl" /></a>
+          </div> 
         <Link href="/" passHref>
             <div className='pb-6'>
             <img

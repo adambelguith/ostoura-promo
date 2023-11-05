@@ -87,7 +87,7 @@ export default function Home({ products, mostSell, newest, promotion }) {
       <div className="products-heading">
       <h2>Most Selling Products</h2>
     </div>
-
+<div className='bg-white rounded-lg'>
     <Swiper
               modules={[Navigation, Pagination, Scrollbar, A11y,Autoplay]}
               navigation={true}
@@ -122,13 +122,14 @@ export default function Home({ products, mostSell, newest, promotion }) {
               )
         )}
             </Swiper>
+            </div>
 
-    {promotion?.length > 2 &&(
-      <div >
+    {promotion?.length  &&(
+      <div className='' >
       <div className="products-heading">
-      <h2> Promotion Produit </h2>
+      <h2 className='text-red-600'> Promotion product </h2>
     </div>
-    <div className='flex w-full justify-center items-center '>
+    <div className='flex w-full justify-center items-center bg-white rounded-lg'>
       <div className="ml-20 sm:ml-0 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xlg:grid-cols-4 products-container mb-12 ml-6 sm:ml-0 ">
         {promotion.slice(0,productPerView).map((product) => (
           <PromotionProduct
@@ -140,11 +141,11 @@ export default function Home({ products, mostSell, newest, promotion }) {
       </div>
       </div>
      
-      <div className='flex w-full justify-center items-center '>
+      <div className='flex w-full justify-center items-center mt-4'>
       <Link href={"/promotion"} passHref>
       <div className='py-4 px-8 left-1/2 border-4 border-red-700 rounded-lg hover:border-[#d64545e0] hover:scale-105 hover:cursor-pointer group '>
-        <button className=' '>
-          <p className='text-red-700 group-hover:text-[#ee922ae0] '>Voir list des promotions </p>
+        <button className=''>
+          <p className='text-red-700 group-hover:text-[#ee922ae0] '>All promotion </p>
         </button>
       </div>
       </Link>
@@ -153,10 +154,10 @@ export default function Home({ products, mostSell, newest, promotion }) {
     )}
 
     <div className="products-heading">
-      <h2> Recent Produit </h2>
+      <h2> Recent Products </h2>
     </div>
-    <div className='flex w-full justify-center items-center '>
-      <div className="ml-20 sm:ml-0 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xlg:grid-cols-4 products-container mb-12 ml-6 sm:ml-0 ">
+    <div className='flex w-full justify-center items-center bg-white rounded-lg'>
+      <div className="ml-20 sm:ml-0 grid grid-flow-row-dense grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xlg:grid-cols-4 products-container mb-12 ml-6 sm:ml-0 ">
         {newest.slice(0,productPerView).map((product, index) => (
           <div key={index}>
          {product.promotion ? (
@@ -179,9 +180,9 @@ export default function Home({ products, mostSell, newest, promotion }) {
      
       <div className='flex w-full justify-center items-center '>
       <Link href={"/search"} passHref>
-      <div className='py-4 px-8 left-1/2 border-4 border-blue-700 rounded-lg hover:border-[#d64545e0] hover:scale-105 hover:cursor-pointer group '>
+      <div className=' mt-4 py-4 px-8 left-1/2 border-4 border-blue-700 rounded-lg hover:border-[#d64545e0] hover:scale-105 hover:cursor-pointer group '>
         <button className=' '>
-          <p className='text-blue-700 group-hover:text-[#ee922ae0] '>Voir plus Recent products </p>
+          <p className='text-blue-700 group-hover:text-[#ee922ae0] '>all Recent products </p>
         </button>
       </div>
       </Link>
@@ -191,7 +192,7 @@ export default function Home({ products, mostSell, newest, promotion }) {
       <div className="products-heading">
       <h2> All Products </h2>
     </div>
-      <div className=" grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 products-container mb-12 ">
+      <div className=" grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 products-container mb-12 bg-white rounded-lg p-4 ">
         {products.slice(0,productPerView).map((product, index) => (
          <div key={index} className='ml-20 sm:ml-0'>
          {product.promotion ? (
@@ -311,7 +312,7 @@ export async function getServerSideProps() {
   .exec();
   const mostsell = await Product.find({}).sort({ sell: -1 }).limit(20);
   const newest = await Product.find({}).sort({ createdAt: -1}).limit(20).lean();
-  const promotion = await Product.find({ promotion: { $gte: 16 } }).sort({promotion:-1}).limit(20).lean();
+  const promotion = await Product.find({ promotion: { $gte: 1 } }).sort({promotion:-1}).limit(20).lean();
   return {
     props: {
       products: JSON.parse(JSON.stringify(products)),

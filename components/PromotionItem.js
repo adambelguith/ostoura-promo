@@ -8,7 +8,7 @@ export default function PromotionProduct({ product, addToCartHandler }) {
   return (
     <div className='relative'>
       
-    <div className="product-slide w-56 h-96">
+    <div className="product-card w-56 h-96">
     
     <div className='promotion-block'>
     </div>
