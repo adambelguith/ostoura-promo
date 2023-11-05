@@ -32,7 +32,6 @@ export default function PromotionProduct({ product, addToCartHandler }) {
         
         {product.countInStock >0 ?(
           <div> 
-            
               <p className="text-lg  product-name font-mono font-extrabold  hover:font-bold capitalize line-through flex w-full justify-center items-center">TND {product.price}</p>
               <p className='text-2xl font-mono font-extrabold  hover:font-bold capitalize text-[#ff5a5f]  flex w-full justify-center items-center'>TND {parseFloat((product.price - ((product.price*product.promotion)/100)).toFixed(2))} </p>
             <div className='flex w-full justify-center items-center'>

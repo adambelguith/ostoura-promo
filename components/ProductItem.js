@@ -38,7 +38,7 @@ export default function ProductItem({ product, addToCartHandler }) {
                   let value = e.target.value.replace(/\D/g, '');
                   value = value.slice(0, 4);
                   e.target.value = value;
-                  setQuantityProduct(value)
+                  setQuantityProduct(parseInt(value)||0)
                 }}
                 />
               <button onClick={()=>{if(quantity < product.countInStock) {setQuantityProduct(quantity+=1)}}} className=''>
