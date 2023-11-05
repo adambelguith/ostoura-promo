@@ -7,7 +7,7 @@ export default function ProductItem({ product, addToCartHandler }) {
   let [quantity, setQuantityProduct] = useState(0)
 
   return (
-    <div className="product-card">
+    <div className="product-card shadow-lg rounded-xl">
       <Link href={`/product/${product.slug}`} passHref>
         <div className='flex w-full justify-center items-center'>
           <img

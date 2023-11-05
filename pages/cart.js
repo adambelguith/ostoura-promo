@@ -74,6 +74,7 @@ function CartScreen() {
                     </td>
                     <td className="p-5 text-right">
                       <select
+                      className='bg-white'
                         value={item.quantity}
                         onChange={(e) =>
                           updateCartHandler(item, e.target.value)
@@ -91,14 +92,14 @@ function CartScreen() {
               <span className="text-sm line-through mt-[4px]">
                 {item.price}  
               </span>
-              {item.promotion >15  ? (
+              {item.promotion  ? (
                 <span className='text-red-600 ml-2'> {parseFloat((item.price - ((item.price*item.promotion)/100)).toFixed(2))} </span>
                 ):( 
                 <span className='ml-2'>{parseFloat((item.price - ((item.price*15)/100)).toFixed(2))}</span> 
               )}
               <span className='ml-2'>TND</span>
               </div>
-              <span className='text-center mr-6'>Remise {item.promotion > 15? ( item.promotion):(15) }% </span>
+              {/* <span className='text-center mr-6'>Remise {item.promotion ? ( item.promotion):(15) }% </span> */}
               </div>
               </td>
                     <td className="p-5 text-center">
@@ -111,7 +112,7 @@ function CartScreen() {
               </tbody>
             </table>
           </div>
-          <div className="card p-5">
+          <div className="card p-5 bg-white">
             <ul>
             {cartItems.map((item, index) => (
               <li className='flex p-2' key={index}>
@@ -132,7 +133,7 @@ function CartScreen() {
               <span className="text-sm line-through mt-[4px]">
                 {item.price}  
               </span>
-              {item.promotion >15  ? (
+              {item.promotion  ? (
                 <span className='text-red-600 ml-2'> {parseFloat((item.price - ((item.price*(item.promotion ?(item.promotion):(15)))/100)).toFixed(2))} TND</span>
                 ):( 
                 <span className='ml-2'>{parseFloat((item.price - ((item.price*15)/100)).toFixed(2))} TND</span> 

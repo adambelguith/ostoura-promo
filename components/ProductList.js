@@ -6,7 +6,7 @@ export default function ProductItem({ product, addToCartHandler }) {
   let [quantity, setQuantityProduct] = useState(0)
 
   return (
-    <div className="product-card w-56 h-96">
+    <div className="product-card w-56 h-96 shadow-lg rounded-xl">
       
         <div>
         <Link href={`/product/${product.slug}`} passHref>

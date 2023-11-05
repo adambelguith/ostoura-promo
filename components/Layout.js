@@ -307,7 +307,7 @@ const changeNav =() =>{
                   <Menu.Button className="text-blue-600 font-bold">
                     <Icon icon="mdi:user-circle" color="#597787" width="35" height="35" />
                   </Menu.Button>
-                  <Menu.Items className="absolute right-0 w-56 origin-top-right bg-white  shadow-lg rounded-b-lg rounded-tl-lg border-indigo-500/75 ">
+                  <Menu.Items className="absolute right-0 w-56 origin-top-right bg-white  shadow-2xl rounded-b-lg rounded-tl-lg border-indigo-500/75  border-2 border-gray-600">
                     <Menu.Item>
                       <DropdownLink className="dropdown-link" href="/profile">
                         Profile
