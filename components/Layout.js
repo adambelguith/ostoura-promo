@@ -110,8 +110,14 @@ export default function Layout({ title, children }) {
   }, []);
 
   const [previewname, setPreviwname] = useState(false)
+  const [catList, setCatList] = useState(false)
   useEffect(() => {
     function updateSlidesPerView() {
+      if (window.innerWidth >= 1240){
+        setCatList(8)
+      }else{
+        setCatList(5)
+      }
       if (window.innerWidth <= 1024) {
         setShowButton(true);
       }else {
@@ -356,20 +362,27 @@ const changeNav =() =>{
          
           <div className='block-category h-10  content-center'>
           <ul className='list-category ' ref={componentContainerRef}>
-            {categories.slice(0, 8).map((category, index) =>(
+            {categories.slice(0,catList).map((category, index) =>(
               <div key={index}>
             <li className={`item  `}>
+              <div className='flex'>
+              {category.photo && (
+                <div className=''>
+                 <img src={category.photo} alt={category.name} className='relative top-2 mr-2 h-6 w-6'/>
+                </div>
+              )}
               <button className='link flex flex-row' key={category.name}
                ref={index === categories.length - 1 ? bottomCategoryRef : null}
                onClick={(e) => toggleCategory(category.name, e)}
             >
-                <p className='text-slate-50  mt-2'>{category.name}</p>
+                <p className='text-slate-50  mt-2 whitespace-nowrap'>{category.name}</p>
                 <div className='arrow-cat h-4 w-4'></div>
-              </button>             
+              </button> 
+              </div>            
             </li>               
             </div>
           ))}
-          {categories.length > 8 && (
+          {categories.length > catList && (
           <li className='cursor-pointer hover:scale-110'>
             <Link href='/search' passHref>
               <div className='flex flex-row'>

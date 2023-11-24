@@ -6,7 +6,7 @@ import nodemailer from 'nodemailer'
 async function sendMailAsync(transporter,user) {
   try {
     await transporter.sendMail({
-      from: '"QBS Quincaillerie ben saleh👥" <qbsdeveloper8@gmail.com>',
+      from: '"Oustoura Promo verefication👥" <qbsdeveloper8@gmail.com>',
       to: user.email,
       subject: 'Email Verification',
       html: `<h1>Please click on the following link to verify your email: </h1>
@@ -59,7 +59,7 @@ const user = await newUser.save();
     port: 587,
     starttls: {
       enable: true
-  },
+    },
   secureConnection: true,
     auth: {
       user: "qbsdeveloper8@gmail.com",
