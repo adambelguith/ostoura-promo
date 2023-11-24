@@ -147,7 +147,7 @@ export default function Layout({ title, children }) {
       const categoryRect = event.currentTarget.getBoundingClientRect();
       setCategoryPositions({
         ...categoryPositions,
-        [categoryName]: { top: categoryRect.top + 29, left: categoryRect.left -10 },
+        [categoryName]: {  left: categoryRect.left -26 },
       });
     }
   };
