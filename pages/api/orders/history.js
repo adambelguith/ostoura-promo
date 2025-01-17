@@ -1,5 +1,4 @@
 import { getSession } from 'next-auth/react';
-import Order from '../../../models/Order';
 import db from '../../../utils/db';
 
 const handler = async (req, res) => {
@@ -7,11 +6,18 @@ const handler = async (req, res) => {
   if (!session) {
     return res.status(401).send({ message: 'signin required' });
   }
-  const { user } = session;
   await db.connect();
-  const orders = await Order.find({ user: user._id });
-  await db.disconnect();
-  res.send(orders);
+  try {
+    const orders = await db.order.order.findMany({
+      where: { userId: parseInt(session.user.id) }
+    });
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Error fetching orders' });
+  } finally {
+    await db.disconnect();
+  }
 };
 
 export default handler;

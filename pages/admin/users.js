@@ -6,6 +6,8 @@ import Layout from '../../components/Layout';
 import { getError } from '../../utils/error';
 import { XCircleIcon } from '@heroicons/react/outline';
 import { CheckCircleIcon } from '@heroicons/react/outline';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 function reducer(state, action) {
   switch (action.type) {
@@ -30,6 +32,16 @@ function reducer(state, action) {
 }
 
 function AdminUsersScreen() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
+  // Check for user management permissions
+  useEffect(() => {
+    if (!session?.user?.permissions?.includes('manage_users')) {
+      router.push('/');
+    }
+  }, [session, router]);
+
   const [{ loading, error, users, successDelete, loadingDelete }, dispatch] =
     useReducer(reducer, {
       loading: true,
@@ -89,31 +101,33 @@ function AdminUsersScreen() {
       <div className="grid md:grid-cols-6 md:gap-3 ">
         <div className='mt-4'>
           <ul className='grid md:flex md:flex-col grid-cols-3 gap-4'>
-          <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/dashboard">Dashboard</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/orders">Orders</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' text-left hover:scale-110 hover:translate-x-1.5 '>
-              <Link href="/admin/products">
-              Products
-              </Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' text-left hover:scale-110 hover:translate-x-1.5 text-left text-[#079afc]'>
-              <Link href="/admin/users"> 
-              <a className="font-bold"> Users </a>
-              </Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/category">Categories</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/1 xl:w-1/2 border-t border-gray-300 my-4' />
+            {session?.user?.permissions?.includes('manage_users') && (
+              <>
+                <li className='text-left hover:scale-110 hover:translate-x-1.5'>
+                  <Link href="/admin/dashboard">Dashboard</Link>
+                </li>
+                <li className='text-left text-[#079afc]'>
+                  <Link href="/admin/users">
+                    <a className="font-bold">Users</a>
+                  </Link>
+                </li>
+              </>
+            )}
+            {session?.user?.permissions?.includes('manage_orders') && (
+              <li className='text-left hover:scale-110 hover:translate-x-1.5'>
+                <Link href="/admin/orders">Orders</Link>
+              </li>
+            )}
+            {session?.user?.permissions?.includes('manage_products') && (
+              <li className='text-left hover:scale-110 hover:translate-x-1.5'>
+                <Link href="/admin/products">Products</Link>
+              </li>
+            )}
+            {session?.user?.permissions?.includes('manage_categories') && (
+              <li className='text-left hover:scale-110 hover:translate-x-1.5'>
+                <Link href="/admin/category">Categories</Link>
+              </li>
+            )}
           </ul>
         </div>
         <div className="overflow-x-auto md:col-span-5">
@@ -179,5 +193,9 @@ function AdminUsersScreen() {
   );
 }
 
-AdminUsersScreen.auth = { adminOnly: true };
+// Update auth check
+AdminUsersScreen.auth = {
+  permissions: ['manage_users']
+};
+
 export default AdminUsersScreen;

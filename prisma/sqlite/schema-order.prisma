@@ -1,0 +1,28 @@
+datasource sqlite_order {
+  provider = "sqlite"
+  url      = "file:./order.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/order"
+}
+
+model Order {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  orderItems  String    // Store JSON string of items array
+  amount      Float
+  status      String    @default("pending") // pending, processing, shipped, delivered
+  isPaid      Boolean   @default(false)
+  isDelivered Boolean   @default(false)
+  paidAt      DateTime?
+  deliveredAt DateTime?
+  shippingAddress String // Store JSON string of shipping details
+  paymentMethod String   @default("cash")
+  paymentResult String?  // Store JSON string of payment response
+  taxPrice    Float     @default(0)
+  shippingPrice Float   @default(0)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+}

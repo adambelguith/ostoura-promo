@@ -1,6 +1,5 @@
 import { getSession } from 'next-auth/react';
 import bcryptjs from 'bcryptjs';
-import User from '../../../models/User';
 import db from '../../../utils/db';
 
 async function handler(req, res) {
@@ -14,11 +13,12 @@ async function handler(req, res) {
   }
 
   const { user } = session;
-  const { name, email,prevpassword, password } = req.body;
+  const { username, email, prevpassword, password } = req.body;
+
   if (
-    !name ||
+    !username ||
     !email ||
-    !email.includes('@')||
+    !email.includes('@') ||
     (prevpassword && prevpassword.trim().length < 5) ||
     (password && password.trim().length < 5)
   ) {
@@ -27,36 +27,58 @@ async function handler(req, res) {
     });
     return;
   }
- 
+
   await db.connect();
-  const toUpdateUser = await User.findById(user._id);
-  if (!toUpdateUser) {
-    res.status(404).json({
-      message: 'User not found',
+  try {
+    // Find user using Prisma
+    const toUpdateUser = await db.user.user.findUnique({
+      where: {
+        id: parseInt(user.id)
+      }
     });
-    return;
-  }
 
-  const isPrevPasswordValid = bcryptjs.compareSync(prevpassword, toUpdateUser.password);
-  if (!isPrevPasswordValid) {
-    res.status(403).json({
-      message: 'Previous password is incorrect',
+    if (!toUpdateUser) {
+      res.status(404).json({
+        message: 'User not found',
+      });
+      return;
+    }
+
+    // Verify previous password
+    const isPrevPasswordValid = bcryptjs.compareSync(prevpassword, toUpdateUser.password);
+    if (!isPrevPasswordValid) {
+      res.status(403).json({
+        message: 'Previous password is incorrect',
+      });
+      return;
+    }
+
+    // Update user with Prisma
+    const updatedUser = await db.user.user.update({
+      where: {
+        id: parseInt(user.id)
+      },
+      data: {
+        username,
+        email,
+        ...(password && { password: bcryptjs.hashSync(password) })
+      }
     });
-    return;
+
+    res.send({
+      message: 'User updated',
+      user: {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email
+      }
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ message: 'Error updating user' });
+  } finally {
+    await db.disconnect();
   }
-
-  toUpdateUser.name = name;
-  toUpdateUser.email = email;
-
-  if (password) {
-    toUpdateUser.password = bcryptjs.hashSync(password);
-  }
-
-  await toUpdateUser.save();
-  await db.disconnect();
-  res.send({
-    message: 'User updated',
-  });
 }
 
 export default handler;

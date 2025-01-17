@@ -26,11 +26,11 @@ export default function LoginScreen() {
     getValues,
     formState: { errors },
   } = useForm();
-  const submitHandler = async ({ name, email, password }) => {
+  const submitHandler = async ({ username, email, password }) => {
     try {
       setLoading(true);
       await axios.post('/api/auth/signup', {
-        name,
+        username,
         email,
         password,
       });
@@ -58,18 +58,18 @@ export default function LoginScreen() {
       >
         <h1 className="mb-4 text-xl">Create Account</h1>
         <div className="mb-4">
-          <label htmlFor="name">Name</label>
+          <label htmlFor="username">UserName</label>
           <input
             type="text"
             className="w-full"
-            id="name"
+            id="username"
             autoFocus
-            {...register('name', {
+            {...register('username', {
               required: 'Please enter name',
             })}
           />
-          {errors.name && (
-            <div className="text-red-500">{errors.name.message}</div>
+          {errors.username && (
+            <div className="text-red-500">{errors.username.message}</div>
           )}
         </div>
 

@@ -1,0 +1,50 @@
+datasource mysql {
+  provider = "mysql"
+  url      = env("MYSQL_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/mysql"
+}
+
+model Category {
+  id                Int      @id @default(autoincrement())
+  name_fr           String
+  name_ar           String
+  description_fr    String?
+  description_ar    String?
+  name_url          String
+  id_fathercategory Int?
+  images            Json?
+  status            String   @default("pending") // pending, approved, rejected
+  sellerId          Int // ID of the seller who created it
+  adminId           Int? // ID of admin who approved/rejected
+  adminMessage      String? // Message from admin about approval/rejection
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  products Product[]
+}
+
+model Product {
+  id                    Int      @id @default(autoincrement())
+  name_fr               String
+  name_ar               String
+  name_url              String
+  description           String?
+  images                Json?
+  categoryId            Int
+  price                 String
+  quantity              Int
+  quantity_endommage    Int
+  quantity_notification Int
+  status                String   @default("pending") // pending, approved, rejected
+  sellerId              Int // ID of the seller who created it
+  adminId               Int? // ID of admin who approved/rejected
+  adminMessage          String? // Message from admin about approval/rejection
+  created_at            DateTime @default(now())
+  updated_at            DateTime @updatedAt
+
+  category Category @relation(fields: [categoryId], references: [id])
+}

@@ -1,548 +1,434 @@
-import axios from 'axios';
-import Link from 'next/link';
+import { useEffect, useReducer, useState } from 'react';
 import { useRouter } from 'next/router';
-import React, { useEffect, useReducer,useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
+import AdminLayout from '../../components/AdminLayout';
+import dynamic from 'next/dynamic';
+import axios from 'axios';
 import { toast } from 'react-toastify';
-import Layout from '../../components/Layout';
-import { getError } from '../../utils/error';
-import Autocomplete from '@mui/material/Autocomplete';
-import TextField from '@mui/material/TextField';
+import { 
+  Box,
+  Grid,
+  Paper,
+  Button,
+  TextField,
+  MenuItem,
+  Typography,
+  Stepper,
+  Step,
+  StepLabel,
+  Card,
+  CardContent,
+  Divider,
+  IconButton,
+  Chip,
+  Switch,
+  FormControlLabel,
+  CircularProgress
+} from '@mui/material';
+import {
+  Save,
+  AddPhotoAlternate,
+  Delete,
+  ArrowBack,
+  ArrowForward,
+  Preview
+} from '@mui/icons-material';
+import QuillEditor from '../../components/QuillEditor';
 
+
+
+const steps = [
+  'Basic Information',
+  'Media & Gallery',
+  'Pricing & Inventory',
+  'Variants & Options',
+  'SEO & Visibility'
+];
+
+const initialState = {
+  loadingUpload: false,
+  loadingCreate: false,
+  errorUpload: '',
+  errorCreate: '',
+  categories: [],
+  uploadProgress: 0
+};
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'FETCH_REQUEST':
-      return { ...state, loading: true, error: '' };
-    case 'FETCH_SUCCESS':
-      return { ...state, dataCategory: action.payload, error: '' };
-    case 'FETCH_FAIL':
-      return { ...state, loading: false, error: action.payload };
-
-    case 'UPDATE_REQUEST':
-      return { ...state, loadingUpdate: true, errorUpdate: '' };
-    case 'UPDATE_SUCCESS':
-      return { ...state, loadingUpdate: false, errorUpdate: '' };
-    case 'UPDATE_FAIL':
-      return { ...state, loadingUpdate: false, errorUpdate: action.payload };
-
     case 'UPLOAD_REQUEST':
-      return { ...state, loadingUpload: true, errorUpload: '' };
+      return { ...state, loadingUpload: true, errorUpload: '', uploadProgress: 0 };
+    case 'UPLOAD_PROGRESS':
+      return { ...state, uploadProgress: action.payload };
     case 'UPLOAD_SUCCESS':
-      return {
-        ...state,
-        loadingUpload: false,
-        errorUpload: '',
-      };
+      return { ...state, loadingUpload: false, errorUpload: '', uploadProgress: 100 };
     case 'UPLOAD_FAIL':
-      return { ...state, loadingUpload: false, errorUpload: action.payload };
-
+      return { ...state, loadingUpload: false, errorUpload: action.payload, uploadProgress: 0 };
+    case 'CREATE_REQUEST':
+      return { ...state, loadingCreate: true, errorCreate: '' };
+    case 'CREATE_SUCCESS':
+      return { ...state, loadingCreate: false };
+    case 'CREATE_FAIL':
+      return { ...state, loadingCreate: false, errorCreate: action.payload };
+    case 'FETCH_CATEGORIES_SUCCESS':
+      return { ...state, categories: action.payload };
+    case 'FETCH_CATEGORIES_FAIL':
+      return { ...state, categories: [], errorCreate: action.payload };
     default:
       return state;
   }
 }
-export default function AdminProductEditScreen() {
- 
-  const [uploaded, setUploaded] =useState(null);
-  const [displayImage , setDisplayImage] = useState(false)
-   const [imageFiles , setImageFiles] = useState([])
-   const [videoBase, setVideoBase] = useState('');
-   const [categoryList, setCategoryList] = useState([])
-   const [selectedcategory, setSelectedcategory] = useState([])
-   const [subcategoryList, setSubcategoryList] = useState([])
 
-  const [{loadingUpdate, loadingUpload}, dispatch] =
-    useReducer(reducer, {
-      loading: true,
-      error: '',
-    });
+export default function AddProduct() {
+  const router = useRouter();
+  const [activeStep, setActiveStep] = useState(0);
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { loadingUpload, loadingCreate, categories, uploadProgress, errorUpload, errorCreate } = state;
 
   const {
-    register,
+    control,
     handleSubmit,
-    formState: { errors },
+    watch,
     setValue,
-  } = useForm();
- 
+    formState: { errors, isDirty, isValid }
+  } = useForm({
+    defaultValues: {
+      name: '',
+      slug: '',
+      category: '',
+      subcategory: '',
+      description: '',
+      price: '',
+      salePrice: '',
+      costPrice: '',
+      sku: '',
+      barcode: '',
+      stock: '',
+      images: [],
+      video: '',
+      brand: '',
+      tags: [],
+      status: 'draft',
+      featured: false,
+      taxable: true,
+      shippingRequired: true,
+      seoTitle: '',
+      seoDescription: '',
+      seoKeywords: [],
+      variants: [],
+      specifications: []
+    },
+    mode: 'onChange'
+  });
+
+  const watchName = watch('name');
+  const [previewMode, setPreviewMode] = useState(false);
+  const [variantOptions, setVariantOptions] = useState([
+    { name: 'Size', values: [] },
+    { name: 'Color', values: [] }
+  ]);
+
   useEffect(() => {
-    const fetchData = async () => {
-    try {
-        dispatch({ type: 'FETCH_REQUEST' });
-        const { data } = await axios.get(`/api/admin/categories/listcat`);
-        const nameCtegory =  data.map((category) => category.name)
-        setCategoryList(nameCtegory)
-        dispatch({ type: 'FETCH_SUCCESS', payload: data });
+    const fetchCategories = async () => {
+      try {
+        const { data } = await axios.get('/api/admin/categories');
+        dispatch({ type: 'FETCH_CATEGORIES_SUCCESS', payload: data });
       } catch (err) {
-        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
-      }  
+        dispatch({ 
+          type: 'FETCH_CATEGORIES_FAIL', 
+          payload: err.response?.data?.message || 'Failed to load categories' 
+        });
+        toast.error('Failed to load categories');
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (watchName) {
+      const slug = watchName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setValue('slug', slug);
     }
-    fetchData();
-} , [ ]);
+  }, [watchName, setValue]);
 
-useEffect(() => {
- if (selectedcategory){
-  const fetchData = async () => {
-  try {
-      dispatch({ type: 'FETCH_REQUEST' });
-      const { data } = await axios.get(`/api/admin/categories/listsub?category=${selectedcategory}`);
-      const namesubCtegory =  data.map((subcategory) => subcategory.name)
-      setSubcategoryList(namesubCtegory)
-    } catch (err) {
-      console.log(err);
-    }  
-  }
-  fetchData();
-}
-} , [selectedcategory ]);
+  const handleImageUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    const maxSize = 5 * 1024 * 1024; // 5MB
 
-  const router = useRouter();
-
-  const uploadHandler = async (imagess) => {
-    const images = Array.from(imagess);
-    return await Promise.all(
-      images.map(async (image,i) => {
-        dispatch({ type: 'UPLOAD_REQUEST' });
-        const {
-         data: { signature, timestamp },
-        } = await axios('/api/admin/cloudinary-sign');
-        const formData = new FormData();
-        formData.append('file', image);
-        formData.append('signature', signature);
-        formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY);
-        formData.append('timestamp', timestamp);
-
-        const response = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload/`,
-          {
-            method: 'POST',
-            body: formData,
-          }
-        );
-        dispatch({ type: 'UPLOAD_SUCCESS' });
-        setDisplayImage(true)
-        toast.success(`Image ${i} uploaded successfully`);
-        return await response.json();
-        
-      })
+    // Validate file size and type
+    const invalidFiles = files.filter(
+      file => file.size > maxSize || !file.type.startsWith('image/')
     );
-  };
-  useEffect (() =>{
-  
-    setValue('image', imageFiles)
-  
-  },[imageFiles])
 
+    if (invalidFiles.length > 0) {
+      toast.error('Some files are too large or not images');
+      return;
+    }
 
- const deleteimages = async (index) =>{
-  const imageindex = imageFiles[index].split('/').pop().split('.')[0]
- const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/destroy`;
- try {
- const response = await fetch(url, {
-  method: 'DELETE',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  body: JSON.stringify({
-    public_id: imageindex,
-    api_key: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_SECRET
-  }),
-});
-
-if (response.ok) {
-  console.log(`Image with public ID ${imageindex} deleted successfully.`);
-} else {
-  console.error('Error deleting image:', response.statusText);
-}
-}catch (error) {
-  console.error('Fetch error:', error);
-}
-//  try {
-//   const formData = new FormData();
-//         formData.append('signature', signature);
-//         formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY);
-//         formData.append('timestamp', timestamp);
-//         const response = await axios.delete(url,formData)
-//   const updatedList = [...imageFiles];
-
-//   updatedList.splice(index, 1); 
-//   setImageFiles(updatedList); 
-
-//   console.log(response);
-
-// } catch (error) {
-//   console.error(error);
-// }
-//  try {
-//    const response = await fetch('/api/admin/images', {
-//      method: 'DELETE',
-//      headers: {
-//        'Content-Type': 'application/json',
-//      },
-//      body: JSON.stringify({ imageindex }),
-//    });
-
-//    if (response.ok) {
-//      const data = await response.json();
-//    } else {
-//      console.error('Failed to delete element');
-//    }
-//  } catch (error) {
-//    console.error('Error deleting element:', error);
-//    toast.error(error)
-//  }
- }
-
-  const videoHandler = async (e) => {
-    const url = `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload/`;
     try {
       dispatch({ type: 'UPLOAD_REQUEST' });
-      const {
-        data: { signature, timestamp },
-      } = await axios('/api/admin/cloudinary-sign');
-
-      const formData = new FormData();
-      formData.append('file', e.target.files[0]);
-      formData.append('signature', signature);
-      formData.append('timestamp', timestamp);
-      formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY);
-      const { data } = await axios.post(url, formData,{
-        onUploadProgress: (data) => {
-          setUploaded(Math.round((data.loaded /data.total)*1000))
-        },
+      const uploadPromises = files.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const { data } = await axios.post('/api/admin/upload', formData, {
+          onUploadProgress: (progressEvent) => {
+            const progress = (progressEvent.loaded / progressEvent.total) * 100;
+            dispatch({ type: 'UPLOAD_PROGRESS', payload: progress });
+          }
+        });
+        return data.url;
       });
+
+      const uploadedUrls = await Promise.all(uploadPromises);
+      const currentImages = watch('images') || [];
+      setValue('images', [...currentImages, ...uploadedUrls]);
       dispatch({ type: 'UPLOAD_SUCCESS' });
-      setValue('video',data.secure_url);
-      setVideoBase(data.secure_url)
-      toast.success('Video uploaded successfully');
+      toast.success('Images uploaded successfully');
     } catch (err) {
-      dispatch({ type: 'UPLOAD_FAIL', payload: getError(err) });
-      toast.error(getError(err));
+      dispatch({ 
+        type: 'UPLOAD_FAIL', 
+        payload: err.response?.data?.message || 'Failed to upload images' 
+      });
+      toast.error('Failed to upload images');
     }
   };
 
+  const handleNext = () => {
+    setActiveStep((prevStep) => prevStep + 1);
+  };
 
-const onSelectFile = async (event) =>  {
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
+  };
 
-event.preventDefault();
-const imageData = await uploadHandler(event.target.files);
-const imageUrl = imageData.map((data)=> data.url);
-setValue('image',imageUrl);
-setImageFiles(prevItems => {
-  if (Array.isArray(prevItems)) {
-    return [...prevItems, ...imageUrl];
-  } else {
-    return [...prevItems]; 
-  }
-});
-};
-
-
-const submitHandler = async ({
-    name,
-    slug,
-    price,
-    promotion,
-    category,
-    subcategory,
-    image,
-    video,
-    brand,
-    countInStock,
-    description,
-  }) => {
+  const onSubmit = async (data) => {
     try {
-      const data = {
-        name,
-        slug,
-        price,
-        promotion,
-        category,
-        subcategory,
-        image,
-        video,
-        brand,
-        countInStock,
-        description,
-      }
-      dispatch({ type: 'UPDATE_REQUEST' });
-      await axios.post(`/api/admin/products`, data);
-      dispatch({ type: 'UPDATE_SUCCESS' });
-      toast.success('Product updated successfully');
+      dispatch({ type: 'CREATE_REQUEST' });
+      
+      // Transform data before sending
+      const productData = {
+        ...data,
+        price: parseFloat(data.price),
+        salePrice: data.salePrice ? parseFloat(data.salePrice) : null,
+        costPrice: data.costPrice ? parseFloat(data.costPrice) : null,
+        stock: parseInt(data.stock, 10),
+        variants: generateVariants(data.variants, variantOptions),
+        status: data.status || 'draft'
+      };
+
+      await axios.post('/api/admin/products', productData);
+      dispatch({ type: 'CREATE_SUCCESS' });
+      toast.success('Product created successfully');
       router.push('/admin/products');
     } catch (err) {
-      dispatch({ type: 'UPDATE_FAIL', payload: getError(err) });
-      toast.error(getError(err));
+      dispatch({ 
+        type: 'CREATE_FAIL', 
+        payload: err.response?.data?.message || 'Failed to create product' 
+      });
+      toast.error(err.response?.data?.message || 'Failed to create product');
     }
+  };
+
+  const generateVariants = (baseVariants, options) => {
+    if (!options.some(opt => opt.values.length > 0)) return [];
+
+    const variants = options.reduce((acc, option) => {
+      if (option.values.length === 0) return acc;
+      
+      if (acc.length === 0) {
+        return option.values.map(value => ({
+          [option.name]: value,
+          price: 0,
+          stock: 0,
+          sku: ''
+        }));
+      }
+
+      return acc.flatMap(existing => 
+        option.values.map(value => ({
+          ...existing,
+          [option.name]: value
+        }))
+      );
+    }, []);
+
+    return variants;
   };
 
   return (
-    <Layout title={`Add Product`}>
-     <div className="grid md:grid-cols-6 md:gap-3 ">
-        <div className='mt-4'>
-          <ul className='grid md:flex md:flex-col grid-cols-3 gap-4'>
-          <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className='text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/dashboard">Dashboard</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className='text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/orders">Orders</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className='text-left hover:translate-x-1.5 text-left text-[#079afc]'>
-              <Link href="/admin/products">
-                <a className="font-bold">Products</a>
-              </Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className='text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/users">Users</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className='text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/category">Categories</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/1 xl:w-1/2 border-t border-gray-300 my-4' />
-          </ul>
-        </div>
-        <div className="md:col-span-5">
-            <form
-              className="mx-auto max-w-screen-md"
-              onSubmit={handleSubmit(submitHandler)}
-            >
-              <h1 className="mb-4 text-xl"></h1>
-              <div className="mb-4">
-                <label htmlFor="name">Name</label>
-                <input
-                  type="text"
-                  className="w-full"
-                  id="name"
-                  autoFocus
-                  {...register('name', {
-                    required: 'Please enter name',
-                  })}
-                />
-                {errors.name && (
-                  <div className="text-red-500">{errors.name.message}</div>
-                )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="slug">Slug</label>
-                <input
-                  type="text"
-                  className="w-full"
-                  id="slug"
-                  {...register('slug', {
-                    required: 'Please enter slug',
-                  })}
-                />
-                {errors.slug && (
-                  <div className="text-red-500">{errors.slug.message}</div>
-                )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="price">Price</label>
-                <input
-                  type="text"
-                  className="w-full"
-                  id="price"
-                  {...register('price', {
-                    required: 'Please enter price',
-                  })}
-                />
-                {errors.price && (
-                  <div className="text-red-500">{errors.price.message}</div>
-                )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="promotion">Promotion</label>
-                <input
-                  type="text"
-                  className="w-full"
-                  id="promotion"
-                  {...register('promotion')}
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="image">image</label>
-                <input
-                  type="text"
-                  className="w-full"
-                  onKeyDown={(event) => {
-                    event.preventDefault();
-                  }}
-                  id="image" 
-                  {...register('image', {
-                    required: 'Please enter image',
-                  })}
-                  
-                />
-                {errors.image && (
-                  <div className="text-red-500">{errors.image.message}</div>
-                )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="imageFile">Upload image</label>
-                <input
-                  type="file"
-                  className="w-full"
-                  id="imageFile"
-                  multiple 
-                  onChange={onSelectFile}
-                />
-                {console.log(imageFiles)}
-                {/* {displayImage && 
-                <div className='flex flex-wrap space-x-4 mt-6'>
-                {imageFiles.map((imageData, index) => (
-                  <div key={index} className='m-4 ' >
-                  <span className='' onClick={() => deleteimages(index)}><XCircleIcon className="h-5 w-5"></XCircleIcon></span>
-                      <img className='rounded-md' src={imageData} alt={`Image ${index}`} height={128}  width={128}/>
-                  </div>
-                ))}
-                </div>} */}
-                {displayImage && 
-                <div className='flex flex-wrap space-x-4 mt-6'>
-                {imageFiles.map((imageData, index) => (
-                  <div key={index} className='m-4 ' >
-                  <span className='cross-stand-alone ' onClick={() => deleteimages(index)}></span>
-                      <img className='rounded-md' src={imageData} alt={`Image ${index}`} height={128}  width={128}/>                     
-                  </div>
-                ))}
-                </div>}
-              </div>
+    <AdminLayout>
+      <Box className="p-6">
+        <Paper className="p-6">
+          <Box className="flex justify-between items-center mb-6">
+            <Typography variant="h5">Add New Product</Typography>
+            <Box className="flex gap-2">
+              <Button
+                variant="outlined"
+                startIcon={<Preview />}
+                onClick={() => setPreviewMode(!previewMode)}
+              >
+                Preview
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubmit(onSubmit)}
+                disabled={loadingCreate || !isDirty}
+              >
+                {loadingCreate ? 'Creating...' : 'Create Product'}
+              </Button>
+            </Box>
+          </Box>
 
-              <div className="mb-4">
-                <label htmlFor="video">video</label>
-                <input
-                  type="text"
-                  className="w-full"
-                  id="video" 
-                  onKeyDown={(event) => {
-                    event.preventDefault();
-                  }}
-                  {...register('video')}
-                />
-                {errors.video && (
-                  <div className="text-red-500">{errors.video.message}</div>
-                )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="videoFile">Upload Video</label>
-                <input
-                  type="file"
-                  className="w-full"
-                  id="videoFile"
-                  onChange={videoHandler}
-                />
+          <Stepper activeStep={activeStep} className="mb-6">
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-                {loadingUpload && <div>Uploading.... {uploaded/10}%</div>}
-                {videoBase && (
-                    <div>
-                      <video controls width="300">
-                        <source src={videoBase} type="video/mp4" />
-                      </video>
-                    </div>
-                  )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="category">category</label>
-                  <Autocomplete
-                      disablePortal
-                      id="category"
-                      options={categoryList}
-                      sx={{ width: 300 }}
-                      onChange={(event, params)=> setSelectedcategory(params) }
-                      renderInput={(params) => <TextField {...params} label="Category" {...register('category', {
-                        required: 'Please enter category',
-                      })} />}
-                      
-                    />
-                    {errors.category && (
-                  <div className="text-red-500">{errors.category.message}</div>
-                )}
-              </div> 
+          <form>
+            {/* Basic Information */}
+            {activeStep === 0 && (
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={8}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" className="mb-4">
+                        Basic Information
+                      </Typography>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                          <Controller
+                            name="name"
+                            control={control}
+                            rules={{ required: 'Name is required' }}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                fullWidth
+                                label="Product Name"
+                                error={!!errors.name}
+                                helperText={errors.name?.message}
+                              />
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Typography variant="subtitle1" className="mb-2">
+                            Product Description
+                          </Typography>
+                          <Controller
+                            name="description"
+                            control={control}
+                            rules={{ 
+                              required: 'Description is required',
+                              validate: value => 
+                                value.replace(/<[^>]*>/g, '').trim().length > 0 || 
+                                'Description cannot be empty'
+                            }}
+                            render={({ field }) => (
+                              <QuillEditor
+                                value={field.value}
+                                onChange={field.onChange}
+                                error={errors.description?.message}
+                              />
+                            )}
+                          />
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" className="mb-4">
+                        Organization
+                      </Typography>
+                      <Grid container spacing={3}>
+                        <Grid item xs={12}>
+                          <Controller
+                            name="category"
+                            control={control}
+                            rules={{ required: 'Category is required' }}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                select
+                                fullWidth
+                                label="Category"
+                                error={!!errors.category}
+                                helperText={errors.category?.message}
+                              >
+                                {categories.map((category) => (
+                                  <MenuItem key={category.id} value={category.id}>
+                                    {category.name}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
+                            )}
+                          />
+                        </Grid>
+                        <Grid item xs={12}>
+                          <Controller
+                            name="tags"
+                            control={control}
+                            render={({ field }) => (
+                              <TextField
+                                {...field}
+                                fullWidth
+                                label="Tags"
+                                placeholder="Enter tags separated by commas"
+                                onChange={(e) => {
+                                  const tags = e.target.value.split(',').map(tag => tag.trim());
+                                  field.onChange(tags);
+                                }}
+                              />
+                            )}
+                          />
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
 
-              <div className="mb-4">
-                <label htmlFor="subcategory">Subcategory</label>
-                  <Autocomplete
-                      disablePortal
-                      id="subcategory"
-                      options={subcategoryList}
-                      sx={{ width: 300 }}
-                      renderInput={(params) => <TextField {...params} label="subcategory" {...register('subcategory', {
-                        required: 'Please enter subcategory',
-                      })} />}
-                      
-                    />
-                    {errors.subcategory && (
-                  <div className="text-red-500">{errors.subcategory.message}</div>
-                )}
-              </div> 
-              <div className="mb-4">
-                <label htmlFor="brand">brand</label>
-                <input
-                  type="text"
-                  className="w-full"
-                  id="brand"
-                  {...register('brand', {
-                    required: 'Please enter brand',
-                  })}
-                />
-                {errors.brand && (
-                  <div className="text-red-500">{errors.brand.message}</div>
-                )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="countInStock">countInStock</label>
-                <input
-                  type="text"
-                  className="w-full"
-                  id="countInStock"
-                  {...register('countInStock', {
-                    required: 'Please enter countInStock',
-                  })}
-                />
-                {errors.countInStock && (
-                  <div className="text-red-500">
-                    {errors.countInStock.message}
-                  </div>
-                )}
-              </div>
-              <div className="mb-4">
-                <label htmlFor="countInStock">description</label>
-                <textarea
-                  rows={5}
-                  type="text"
-                  className="w-full"
-                  id="description"
-                  {...register('description', {
-                    required: 'Please enter description',
-                  })}
-                />
-                {errors.description && (
-                  <div className="text-red-500">
-                    {errors.description.message}
-                  </div>
-                )}
-              </div>
-              <div className="mb-4">
-                <button disabled={loadingUpdate} onClick={handleSubmit(submitHandler)} className="primary-button">
-                  Add Product
-                </button>
-              </div>
-              <div className="mb-4">
-                <Link href={`/admin/products`}>Back</Link>
-              </div>
-            </form>
-          
-        </div>
-      </div>
-    </Layout>
+            {/* Navigation Buttons */}
+            <Box className="flex justify-between mt-6">
+              <Button
+                disabled={activeStep === 0}
+                onClick={handleBack}
+                startIcon={<ArrowBack />}
+              >
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                onClick={activeStep === steps.length - 1 ? handleSubmit(onSubmit) : handleNext}
+                endIcon={activeStep === steps.length - 1 ? <Save /> : <ArrowForward />}
+              >
+                {activeStep === steps.length - 1 ? 'Create Product' : 'Next'}
+              </Button>
+            </Box>
+          </form>
+        </Paper>
+      </Box>
+    </AdminLayout>
   );
 }
 
-AdminProductEditScreen.auth = { adminOnly: true };
+// Add authentication and permissions check
+AddProduct.auth = {
+  required: true,
+  permissions: ['create_products']
+};
 
 
 

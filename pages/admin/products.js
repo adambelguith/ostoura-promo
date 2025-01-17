@@ -1,24 +1,59 @@
-import axios from 'axios';
+import { useEffect, useReducer, useState } from 'react';
+import AdminLayout from '../../components/AdminLayout';
 import Link from 'next/link';
-import React, { useEffect, useReducer , useState } from 'react';
+import axios from 'axios';
 import { toast } from 'react-toastify';
-import Layout from '../../components/Layout';
-import { getError } from '../../utils/error';
+import { 
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Button,
+  TextField,
+  MenuItem,
+  IconButton,
+  Chip,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Paper,
+  Tooltip,
+  Switch,
+  Menu
+} from '@mui/material';
+import {
+  Add,
+  FilterList,
+  Search,
+  Edit,
+  Delete,
+  Visibility,
+  MoreVert,
+  TrendingUp,
+  LocalShipping,
+  Inventory
+} from '@mui/icons-material';
 
 function reducer(state, action) {
   switch (action.type) {
     case 'FETCH_REQUEST':
       return { ...state, loading: true, error: '' };
     case 'FETCH_SUCCESS':
-      return { ...state, loading: false, products: action.payload, error: '' };
+      return { 
+        ...state, 
+        loading: false, 
+        products: action.payload.products,
+        totalCount: action.payload.total,
+        statistics: action.payload.statistics,
+        error: '' 
+      };
     case 'FETCH_FAIL':
       return { ...state, loading: false, error: action.payload };
-    case 'CREATE_REQUEST':
-      return { ...state, loadingCreate: true };
-    case 'CREATE_SUCCESS':
-      return { ...state, loadingCreate: false };
-    case 'CREATE_FAIL':
-      return { ...state, loadingCreate: false };
     case 'DELETE_REQUEST':
       return { ...state, loadingDelete: true };
     case 'DELETE_SUCCESS':
@@ -27,57 +62,60 @@ function reducer(state, action) {
       return { ...state, loadingDelete: false };
     case 'DELETE_RESET':
       return { ...state, loadingDelete: false, successDelete: false };
-
     default:
-      state;
+      return state;
   }
 }
-export default function AdminProdcutsScreen() {
+
+export default function AdminProductsScreen() {
   const [
-    { loading, error, products, loadingCreate, successDelete, loadingDelete },
+    { loading, error, products, loadingDelete, successDelete, totalCount, statistics },
     dispatch,
   ] = useReducer(reducer, {
     loading: true,
     products: [],
     error: '',
+    statistics: null
   });
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState([]);
+
+  // Filtering and Pagination State
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [filters, setFilters] = useState({
+    search: '',
+    category: 'all',
+    status: 'all',
+    stock: 'all',
+    sortBy: 'newest'
+  });
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         dispatch({ type: 'FETCH_REQUEST' });
-        const { data } = await axios.get(`/api/admin/products`);
+        const { data } = await axios.get(`/api/admin/products`, {
+          params: {
+            page: page + 1,
+            limit: rowsPerPage,
+            ...filters
+          }
+        });
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
-        setFilteredProducts(data)
       } catch (err) {
-        dispatch({ type: 'FETCH_FAIL', payload: getError(err) });
+        dispatch({ type: 'FETCH_FAIL', payload: err.message });
+        toast.error('Failed to load products');
       }
     };
 
     if (successDelete) {
       dispatch({ type: 'DELETE_RESET' });
-    } else {
-      fetchData();
     }
-  }, [successDelete]);
-
-  useEffect(() => {
-    const filtered = products.filter((product) => {
-      const lowerCaseQuery = searchQuery.toLowerCase();
-      return (
-        product.name.toLowerCase().includes(lowerCaseQuery) 
-        // product._id.includes(lowerCaseQuery) || // You can also search by ID
-        // product.category.toLowerCase().includes(lowerCaseQuery)
-      );
-    });
-
-    setFilteredProducts(filtered);
-  }, [searchQuery, products]);
+    fetchData();
+  }, [page, rowsPerPage, filters, successDelete]);
 
   const deleteHandler = async (productId) => {
-    if (!window.confirm('Are you sure?')) {
+    if (!window.confirm('Are you sure you want to delete this product?')) {
       return;
     }
     try {
@@ -87,113 +125,269 @@ export default function AdminProdcutsScreen() {
       toast.success('Product deleted successfully');
     } catch (err) {
       dispatch({ type: 'DELETE_FAIL' });
-      toast.error(getError(err));
+      toast.error('Failed to delete product');
     }
   };
-  return (
-    <Layout title="Admin Products">
-      <div className="grid md:grid-cols-6 md:gap-3 ">
-        <div className='mt-4'>
-          <ul className='grid md:flex md:flex-col grid-cols-3 gap-4 '>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/dashboard">Dashboard</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' md:left-0 hover:scale-110 hover:translate-x-1.5 '>
-              <Link href="/admin/orders">Orders</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' text-left text-left text-[#079afc] '>
-              <Link href="/admin/products">
-                <a className="font-bold">Products</a>
-              </Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4' />
-            <li className=' text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/users">Users</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 border-t border-gray-300 my-4'/>
-            <li className=' text-left hover:scale-110 hover:translate-x-1.5'>
-              <Link href="/admin/category">Categories</Link>
-            </li>
-            <hr className='w-full sm:w-1/2 md:w-1/3 lg:w-1/1 xl:w-1/2 border-t border-gray-300 my-4'/>
-          </ul>
-        </div>
-        <div className="overflow-x-auto md:col-span-5">
-          <div className="flex flex-col sm:flex-row justify-between">
-            <h1 className="mb-4 text-xl">Products : {filteredProducts.length}</h1>
-            
-            <input
-              className='w-64'
-              type="text"
-              placeholder="Search by name"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
 
-            {loadingDelete && <div>Deleting item...</div>}
-            <Link href={`/admin/addproduct`}>
-              <a type="button" className="default-button w-20 mt-4 sm:mt-0">
-              {loadingCreate ? 'Loading' : 'Create'}
-              </a>
-            </Link>
-              
-          </div>
-          {loading ? (
-            <div>Loading...</div>
-          ) : error ? (
-            <div className="alert-error">{error}</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead className="border-b">
-                  <tr>
-                    <th className="px-5 text-left">ID</th>
-                    <th className="px-5 text-left">Image</th>
-                    <th className="p-5 text-left">NAME</th>
-                    <th className="p-5 text-left">PRICE</th>
-                    <th className="p-5 text-left">COUNT</th>
-                    <th className="p-5 text-left">RATING</th>
-                    <th className="p-5 text-left">ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-                  .map((product) => (
-                    <tr key={product._id} className="border-b">
-                      <td className=" p-5 ">{product._id.substring(20, 24)}</td>
-                      <td className=" p-5 "><img className='m-4 rounded-md' src={product.image[0]} height={90}  width={90
-                      }/></td>
-                      <td className=" p-5 ">{product.name.length > 35 ?(product.name.slice(0,35).split(' ').slice(0,-1).join(' ').concat(" ...")):(product.name) }</td>
-                      <td className=" p-5 "> TND {product.price}</td>
-                      <td className=" p-5 ">{product.countInStock}</td>
-                      <td className=" p-5 ">{product.rating}</td>
-                      <td className=" p-5 ">
-                        <Link href={`/admin/product/${product._id}`}>
-                          <a type="button" className="default-button">
-                            Edit
-                          </a>
-                        </Link>
-                        &nbsp;
-                        <button
-                          onClick={() => deleteHandler(product._id)}
-                          className="default-button"
-                          type="button"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    </Layout>
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    setPage(0);
+  };
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <AdminLayout>
+      <Box className="p-6">
+         <Box className="flex justify-between items-center mb-6">
+          <Typography variant="h5">Products</Typography>
+          <Link href="/admin/addproduct" passHref legacyBehavior>
+            <Button
+              component="a"
+              variant="contained"
+              color="primary"
+              startIcon={<Add />}
+            >
+              Add Product
+            </Button>
+          </Link>
+        </Box>
+
+        {/* Statistics Cards */}
+        <Grid container spacing={3} className="mb-6">
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Total Products
+                </Typography>
+                <Typography variant="h4">
+                  {statistics?.totalProducts || 0}
+                </Typography>
+                <Typography color="textSecondary">
+                  Active: {statistics?.activeProducts || 0}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Low Stock
+                </Typography>
+                <Typography variant="h4">
+                  {statistics?.lowStockProducts || 0}
+                </Typography>
+                <Typography color="textSecondary">
+                  Out of Stock: {statistics?.outOfStockProducts || 0}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Total Sales
+                </Typography>
+                <Typography variant="h4">
+                  ${statistics?.totalSales || 0}
+                </Typography>
+                <Typography color="textSecondary">
+                  This Month: ${statistics?.monthSales || 0}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card>
+              <CardContent>
+                <Typography color="textSecondary" gutterBottom>
+                  Pending Approval
+                </Typography>
+                <Typography variant="h4">
+                  {statistics?.pendingProducts || 0}
+                </Typography>
+                <Typography color="textSecondary">
+                  Drafts: {statistics?.draftProducts || 0}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Filters and Actions */}
+        <Paper className="p-4 mb-6">
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={4}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Search products..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                InputProps={{
+                  startAdornment: <Search />
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} sm={8}>
+              <Box className="flex gap-2 justify-end">
+                <TextField
+                  select
+                  value={filters.category}
+                  onChange={(e) => handleFilterChange('category', e.target.value)}
+                  variant="outlined"
+                  size="small"
+                >
+                  <MenuItem value="all">All Categories</MenuItem>
+                  <MenuItem value="electronics">Electronics</MenuItem>
+                  <MenuItem value="clothing">Clothing</MenuItem>
+                </TextField>
+                <TextField
+                  select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  variant="outlined"
+                  size="small"
+                >
+                  <MenuItem value="all">All Status</MenuItem>
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="draft">Draft</MenuItem>
+                  <MenuItem value="pending">Pending</MenuItem>
+                </TextField>
+                <TextField
+                  select
+                  value={filters.sortBy}
+                  onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                  variant="outlined"
+                  size="small"
+                >
+                  <MenuItem value="newest">Newest First</MenuItem>
+                  <MenuItem value="oldest">Oldest First</MenuItem>
+                  <MenuItem value="price_high">Price: High to Low</MenuItem>
+                  <MenuItem value="price_low">Price: Low to High</MenuItem>
+                  <MenuItem value="stock_low">Low Stock First</MenuItem>
+                </TextField>
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Products Table */}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Product</TableCell>
+                <TableCell>Category</TableCell>
+                <TableCell>Price</TableCell>
+                <TableCell>Stock</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Sales</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell>
+                    <Box className="flex items-center gap-2">
+                      <img
+                        src={JSON.parse(product.images)[0]}
+                        alt={product.name}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                      <div>
+                        <Typography variant="subtitle2">{product.name}</Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          SKU: {product.sku}
+                        </Typography>
+                      </div>
+                    </Box>
+                  </TableCell>
+                  <TableCell>
+                    <Chip label={product.category} size="small" />
+                  </TableCell>
+                  <TableCell>
+                    ${product.price}
+                    {product.salePrice && (
+                      <Typography variant="caption" color="error" className="ml-1">
+                        -${product.salePrice}
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={`${product.stock} in stock`}
+                      color={product.stock < 10 ? "warning" : "success"}
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={product.status}
+                      color={
+                        product.status === 'active' ? "success" :
+                        product.status === 'pending' ? "warning" : "default"
+                      }
+                      size="small"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Box className="flex items-center gap-1">
+                      <TrendingUp fontSize="small" color="primary" />
+                      {product.totalSales}
+                    </Box>
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton onClick={handleMenuOpen}>
+                      <MoreVert />
+                    </IconButton>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem component={Link} href={`/admin/product/${product.id}`}>
+                        <Edit fontSize="small" className="mr-2" /> Edit
+                      </MenuItem>
+                      <MenuItem onClick={() => deleteHandler(product.id)}>
+                        <Delete fontSize="small" className="mr-2" /> Delete
+                      </MenuItem>
+                      <MenuItem component={Link} href={`/product/${product.slug}`}>
+                        <Visibility fontSize="small" className="mr-2" /> View
+                      </MenuItem>
+                    </Menu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          <TablePagination
+            component="div"
+            count={totalCount}
+            page={page}
+            onPageChange={(e, newPage) => setPage(newPage)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setRowsPerPage(parseInt(e.target.value, 10));
+              setPage(0);
+            }}
+          />
+        </TableContainer>
+      </Box>
+    </AdminLayout>
   );
 }
 
-AdminProdcutsScreen.auth = { adminOnly: true };
+AdminProductsScreen.auth = {
+  permissions: ['manage_orders', 'view_orders']
+};

@@ -1,0 +1,19 @@
+datasource sqlite_user {
+  provider = "sqlite"
+  url      = "file:./user.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/user"
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String
+  email       String   @unique
+  password    String
+  role        String   @default("user") // "admin", "seller", "user"
+  permissions String?  // Store permissions as comma-separated string
+  created_at  DateTime @default(now())
+}

@@ -31,7 +31,7 @@ export default function Layout({ title, children }) {
   const { state, dispatch } = useContext(Store);
   const { cart } = state;
   const [cartItemsCount, setCartItemsCount] = useState(0);
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedCategoryresp, setSelectedCategoryresp] = useState(null);
   const [subcategoryData, setSubcategoryData] = useState(null);
@@ -43,6 +43,10 @@ export default function Layout({ title, children }) {
   const [isHovered, setIsHovered] = useState(false);
   const [isHoveredearch, setIsHoveredSearch] = useState(false);
   const [showbutton, setShowButton] = useState(false);
+  const [query, setQuery] = useState('');
+  const router = useRouter();
+  const [catList, setCatList] = useState(8);
+
   useEffect(() => {
     setCartItemsCount(cart.cartItems.length);
   }, [cart.cartItems]);
@@ -53,49 +57,23 @@ export default function Layout({ title, children }) {
     signOut({ callbackUrl: '/login' });
   };
 
-  const [query, setQuery] = useState('');
-
-  const router = useRouter();
   const submitHandler = (e) => {
     e.preventDefault();
     router.push(`/search?query=${query}`);
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCategories = async () => {
       try {
-        const { data } = await axios.get(`/api/categories/listcat`);
-        setCategories(data)
+        const response = await axios.get('/api/categories/listcat');
+        setCategories(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
-        console.log(err)
+        console.error('Failed to fetch categories:', err);
+        setCategories([]);
       }
     };
-    fetchData()
+    fetchCategories();
   }, []);
-  useEffect(() => {
-    if (selectedCategory) {
-      const fetchData = async () => {
-        try {
-          const { data } = await axios.get(`/api/categories/listsub/${selectedCategory}`);
-          setSubcategoryData(data)
-        } catch (err) {
-          console.error(err)
-        }
-      };
-      fetchData()
-    }
-    if (selectedCategoryresp) {
-      const fetchData = async () => {
-        try {
-          const { data } = await axios.get(`/api/categories/listsub/${selectedCategoryresp}`);
-          setSubcategoryData(data)
-        } catch (err) {
-          console.log(err)
-        }
-      };
-      fetchData()
-    }
-  }, [selectedCategory, selectedCategoryresp]);
 
   useEffect(() => {
     const handleClick = (event) => {
@@ -110,7 +88,7 @@ export default function Layout({ title, children }) {
   }, []);
 
   const [previewname, setPreviwname] = useState(false)
-  const [catList, setCatList] = useState(false)
+ 
   useEffect(() => {
     function updateSlidesPerView() {
       if (window.innerWidth >= 1240){
@@ -167,24 +145,11 @@ export default function Layout({ title, children }) {
     return { top: 0, left: 0 };
   };
 
-
-  useEffect(() => {
-    if(title =="Home Page"){
-    const fetchProduct= async () => {
-      try {
-        const { data } = await axios.get(`/api/products/feature`);
-        setProducts(data)
-      } catch (err) {
-        console.log("cannot get feature")
-      }
-    };
-    fetchProduct()
+  const changeNav =() =>{
+    setIsCategorySvg(!isCategorySvg)
   }
-  }, [title]);
-const changeNav =() =>{
-  setIsCategorySvg(!isCategorySvg)
-}
 
+  const displayCategories = Array.isArray(categories) ? categories : [];
 
   return (
     <>
@@ -231,10 +196,10 @@ const changeNav =() =>{
                  </div>
               ): (
                 <ul className='flex flex-col '>
-               {categories.map((category, index) =>(
+               {displayCategories.map((category, index) =>(
             <li key={index} className="w-5/6 relative left-12">
               <button className='items link flex flex-row  justify-between' key={category.name}
-               onClick={(e) => toggleCategoryresp(category.name, e)}
+               onClick={(e) => toggleCategoryresp(category.name)}
               >
                 <p className='text-slate-50  mt-2'>{category.name}</p>
                 <div className='arrow-catres h-4 w-4'></div>   
@@ -327,7 +292,7 @@ const changeNav =() =>{
                         Order History
                       </DropdownLink>
                     </Menu.Item>
-                    {session.user.isAdmin && (
+                    {session?.user?.role === 'admin' && (
                       <Menu.Item>
                         <DropdownLink
                           className ="dropdown-link"
@@ -362,7 +327,7 @@ const changeNav =() =>{
          
           <div className='block-category h-10  content-center'>
           <ul className='list-category ' ref={componentContainerRef}>
-            {categories.slice(0,catList).map((category, index) =>(
+            {displayCategories.slice(0,catList).map((category, index) =>(
               <div key={index}>
             <li className={`item  `}>
               <div className='flex'>
@@ -372,7 +337,7 @@ const changeNav =() =>{
                 </div>
               )}
               <button className='link flex flex-row' key={category.name}
-               ref={index === categories.length - 1 ? bottomCategoryRef : null}
+               ref={index === displayCategories.length - 1 ? bottomCategoryRef : null}
                onClick={(e) => toggleCategory(category.name, e)}
             >
                 <p className='text-slate-50  mt-2 whitespace-nowrap'>{category.name}</p>
@@ -382,7 +347,7 @@ const changeNav =() =>{
             </li>               
             </div>
           ))}
-          {categories.length > catList && (
+          {displayCategories.length > catList && (
           <li className='cursor-pointer hover:scale-110'>
             <Link href='/search' passHref>
               <div className='flex flex-row'>

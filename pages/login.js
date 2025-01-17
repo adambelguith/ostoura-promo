@@ -15,19 +15,19 @@ export default function LoginScreen() {
   const router = useRouter();
   const { redirect } = router.query;
 
-useEffect(()=>{
-  if (session && !isSignedUp) {
-    const { name, email } = session.user;
-    axios
-      .post('/api/auth/signupgoogle', {
-        name,
-        email,
-      })
-      .then(() => {
-        setIsSignedUp(true); 
-      })
-  }
-},[session,isSignedUp])
+// useEffect(()=>{
+//   if (session && !isSignedUp) {
+//     const { name, email } = session.user;
+//     axios
+//       .post('/api/auth/signupgoogle', {
+//         name,
+//         email,
+//       })
+//       .then(() => {
+//         setIsSignedUp(true); 
+//       })
+//   }
+// },[session,isSignedUp])
 
   useEffect(()  => {    
     if (session?.user) {
