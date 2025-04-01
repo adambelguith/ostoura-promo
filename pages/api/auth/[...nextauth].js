@@ -7,86 +7,78 @@ import { PrismaClient as PrismaUserClient } from '../../../prisma/sqlite/generat
 const prisma = new PrismaUserClient();
 
 export default NextAuth({
+  // baseUrl: process.env.NEXTAUTH_URL,
+  session: {
+    strategy: 'jwt',
+    maxAge: 24 * 60 * 60,
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      try {
+      if (user?.id) token.id = user.id;
+      if (user?.role) token.role = user.role;
+      if (user?.permissions) token.permissions = user.permissions;
+      if (user?.provider) token.provider = user.provider;
+      return token;
+      }catch (error) {
+        console.error("JWT Callback Error:", error);
+        return token;
+      }
+    },
+    async session({ session, token }) {
+      try{
+      if (token?.id) session.user.id = token.id;
+      if (token?.role) session.user.role = token.role;
+      if (token?.permissions) session.user.permissions = token.permissions;
+      if (token?.provider) session.user.provider = token.provider;
+      return session;
+      } catch (error) {
+        console.error("Session Callback Error:", error);
+        return session;
+      }
+    },
+  },
   providers: [
     CredentialsProvider({
       async authorize(credentials) {
-        try {
-          const user = await prisma.user.findUnique({
-            where: {
-              email: credentials.email,
-            },
-            select: {
-              id: true,
-              username: true,
-              email: true,
-              password: true,
-              role: true,
-              permissions: true,
-            },
-          });
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email,
+          },
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            password: true,
+            role: true,
+            permissions: true,
+          },
+        });
 
-          if (!user) {
-            return null; // Return null instead of throwing error
-          }
-
-          const isValid = await compare(credentials.password, user.password);
-
-          if (!isValid) {
-            return null; // Return null instead of throwing error
-          }
-
-          return {
-            id: user.id,
-            name: user.username,
-            email: user.email,
-            role: user.role,
-            permissions: user.permissions?.split(',') || [],
-            provider: 'credentials'
-          };
-        } catch (error) {
-          return null; // Return null for any errors
+        if (!user) {
+          throw new Error('Invalid email or password');
         }
+
+        const isValid = await compare(credentials.password, user.password);
+
+        if (!isValid) {
+          throw new Error('Invalid email or password');
+        }
+
+        return {
+          id: user.id,
+          name: user.username,
+          email: user.email,
+          role: user.role,
+          permissions: user.permissions?.split(',') || [],
+          provider: 'credentials',
+        };
       },
     }),
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
       clientSecret: process.env.GOOGLE_SECRET,
-      profile(profile) {
-        return {
-          id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
-          provider: 'google',
-          role: 'user',
-          permissions: 'view_products,add_to_cart'
-        };
-      },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.permissions = user.permissions;
-        token.provider = user.provider;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.permissions = token.permissions;
-        session.user.provider = token.provider;
-      }
-      return session;
-    },
-  },
-  pages: {
-    signIn: '/login',
-    error: '/login',
-  },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.JWT_AUTH,
 });

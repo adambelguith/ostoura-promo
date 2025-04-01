@@ -141,6 +141,9 @@ exports.Prisma.ProductScalarFieldEnum = {
   name_url: 'name_url',
   description: 'description',
   images: 'images',
+  variants: 'variants',
+  remise_prodique: 'remise_prodique',
+  remise_gros: 'remise_gros',
   categoryId: 'categoryId',
   price: 'price',
   quantity: 'quantity',
@@ -161,6 +164,10 @@ exports.Prisma.SortOrder = {
 
 exports.Prisma.NullableJsonNullValueInput = {
   DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
@@ -190,7 +197,6 @@ exports.Prisma.ProductOrderByRelevanceFieldEnum = {
   name_ar: 'name_ar',
   name_url: 'name_url',
   description: 'description',
-  price: 'price',
   status: 'status',
   adminMessage: 'adminMessage'
 };

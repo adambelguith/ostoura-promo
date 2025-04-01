@@ -22,14 +22,14 @@ async function connect() {
 
 // Function to disconnect from all databases
 async function disconnect() {
-  try {
-    await mysqlPrisma.$disconnect();
-    await userPrisma.$disconnect();
-    await orderPrisma.$disconnect();
-    console.log("Disconnected from all databases");
-  } catch (error) {
-    console.error('Error disconnecting from the databases:', error);
-  }
+  // try {
+  //   await mysqlPrisma.$disconnect();
+  //   await userPrisma.$disconnect();
+  //   await orderPrisma.$disconnect();
+  //   console.log("Disconnected from all databases");
+  // } catch (error) {
+  //   console.error('Error disconnecting from the databases:', error);
+  // }
 }
 
 // Function to convert document to object (if needed)

@@ -1,10 +1,17 @@
-import { getSession } from 'next-auth/react';
+import { isAuth, hasPermission } from '../../../../../middleware/jwt';
 import db from '../../../../../utils/db';
+import { Permissions } from '../../../../../utils/permissions';
 
 const handler = async (req, res) => {
-  const session = await getSession({ req });
-  if (!session || (session && !session.user.isAdmin)) {
-    return res.status(401).send('signin required');
+  const authResult = await isAuth(req, res);
+  if (!authResult) {
+    return; // Stop further execution if authentication fails
+  }
+
+  // Then check permissions
+  const permissionResult = await hasPermission(Permissions.MANAGE_PRODUCTS)(req, res);
+  if (!permissionResult) {
+    return; // Stop further execution if permission check fails
   }
 
   if (req.method === 'GET') {
@@ -16,6 +23,7 @@ const handler = async (req, res) => {
   } else {
     return res.status(400).send({ message: 'Method not allowed' });
   }
+
 };
 
 const getHandler = async (req, res) => {

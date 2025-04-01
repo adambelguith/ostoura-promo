@@ -32,13 +32,16 @@ model Product {
   name_fr               String
   name_ar               String
   name_url              String
-  description           String?
-  images                Json?
+  description           String   @mysql.LongText
+  images                Json
+  variants              Json? // JSON field for product variants
+  remise_prodique       Json? // JSON field for retail discount
+  remise_gros           Json? // JSON field for wholesale discount
   categoryId            Int
-  price                 String
+  price                 Float
   quantity              Int
-  quantity_endommage    Int
-  quantity_notification Int
+  quantity_endommage    Int?
+  quantity_notification Int?
   status                String   @default("pending") // pending, approved, rejected
   sellerId              Int // ID of the seller who created it
   adminId               Int? // ID of admin who approved/rejected

@@ -44,7 +44,7 @@ const formats = [
   'code-block'
 ];
 
-export default function QuillEditor({ value, onChange, error }) {
+export default function QuillEditor({ value, onChange, error, productId }) {
   const editorRef = useRef(null);
 
   const handleImageUpload = async () => {
@@ -56,25 +56,16 @@ export default function QuillEditor({ value, onChange, error }) {
     input.onchange = async () => {
       const file = input.files[0];
       if (file) {
-        try {
-          const formData = new FormData();
-          formData.append('file', file);
-
-          const response = await fetch('/api/admin/upload-local', {
-            method: 'POST',
-            body: formData,
-          });
-
-          const data = await response.json();
-          
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Image = e.target.result; // Convert image to Base64
           const editor = editorRef.current?.getEditor();
           if (editor) {
-            const range = editor.getSelection(true);
-            editor.insertEmbed(range.index, 'image', data.url);
+            const range = editor.getSelection();
+            editor.insertEmbed(range.index, 'image', base64Image); // Insert Base64 image into editor
           }
-        } catch (err) {
-          console.error('Image upload failed:', err);
-        }
+        };
+        reader.readAsDataURL(file); // Read file as Base64
       }
     };
   };
@@ -221,9 +212,6 @@ export default function QuillEditor({ value, onChange, error }) {
             margin-right: 0 !important;
             margin-bottom: 4px;
           }
-        }
-
-       
         }
       `}</style>
     </div>

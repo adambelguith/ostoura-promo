@@ -1,140 +1,150 @@
 import { useEffect, useReducer, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useForm } from 'react-hook-form';
 import AdminLayout from '../../../components/AdminLayout';
-import MediaUpload from '../../../components/admin/products/MediaUpload';
-import { toast } from 'react-toastify';
 import axios from 'axios';
-import { 
-  Box,
-  Button,
-  Tab,
-  Tabs,
-  CircularProgress,
-  Alert
-} from '@mui/material';
+import { toast } from 'react-toastify';
+import { useSession } from 'next-auth/react';
+import { useForm, Controller } from 'react-hook-form';
 import {
-  ArrowBack,
-  Save
-} from '@mui/icons-material';
+  Box,
+  Grid,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Stepper,
+  Step,
+  StepLabel,
+  Paper,
+} from '@mui/material';
+import { ArrowBack, ArrowForward, Save } from '@mui/icons-material';
+import MediaUpload from '../../../components/admin/products/MediaUpload';
+import QuillEditor from '../../../components/QuillEditor';
+import VariantsStep from '../../../components/VariantsStep';
+
+const steps = ['Basic Information', 'Media & Gallery', 'Pricing & Inventory', 'Variants'];
 
 function reducer(state, action) {
   switch (action.type) {
     case 'FETCH_REQUEST':
       return { ...state, loading: true, error: '' };
     case 'FETCH_SUCCESS':
-      return { ...state, loading: false, error: '' };
+      return { ...state, loading: false, product: action.payload, error: '' };
     case 'FETCH_FAIL':
       return { ...state, loading: false, error: action.payload };
     case 'UPDATE_REQUEST':
-      return { ...state, loadingUpdate: true, errorUpdate: '' };
+      return { ...state, loadingUpdate: true };
     case 'UPDATE_SUCCESS':
-      return { ...state, loadingUpdate: false, errorUpdate: '' };
+      return { ...state, loadingUpdate: false, successUpdate: true };
     case 'UPDATE_FAIL':
-      return { ...state, loadingUpdate: false, errorUpdate: action.payload };
-    case 'UPLOAD_REQUEST':
-      return { ...state, loadingUpload: true, errorUpload: '' };
-    case 'UPLOAD_SUCCESS':
-      return { ...state, loadingUpload: false, errorUpload: '' };
-    case 'UPLOAD_FAIL':
-      return { ...state, loadingUpload: false, errorUpload: action.payload };
+      return { ...state, loadingUpdate: false };
     default:
       return state;
   }
 }
 
-export default function AdminProductEditScreen() {
+export default function EditProduct() {
   const router = useRouter();
-  const { id: productId } = router.query;
-  const [activeTab, setActiveTab] = useState(0);
-  const [{ loading, error, loadingUpdate }, dispatch] = useReducer(reducer, {
+  const { id } = router.query;
+  const [activeStep, setActiveStep] = useState(0);
+  const [state, dispatch] = useReducer(reducer, {
     loading: true,
+    product: null,
     error: '',
+    loadingUpdate: false,
+    successUpdate: false,
   });
+  const { product, loading, error, loadingUpdate } = state;
+
+  const { data: session } = useSession();
+  const sellerId = session?.user?.id;
 
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
     control,
-    reset
-  } = useForm();
-
-  const [productData, setProductData] = useState({
-    images: [],
-    video: '',
-    variants: [],
-    specifications: [],
-    category: null,
-    subcategory: null,
-    tags: [],
-    seoData: {
-      title: '',
+    handleSubmit,
+    watch,
+    setValue,
+    formState: { errors, isDirty, isValid },
+  } = useForm({
+    defaultValues: {
+      name_fr: '',
+      name_ar: '',
+      name_url: '',
       description: '',
-      keywords: []
-    }
+      images: [],
+      categoryId: '',
+      price: '',
+      quantity: 0,
+      quantity_endommage: 0,
+      quantity_notification: 0,
+      status: 'pending',
+      sellerId: sellerId,
+    },
+    mode: 'onChange',
   });
 
-  useEffect(() => {
-    if (!productId) return;
+  const [selectedVariants, setSelectedVariants] = useState({ colors: [], sizes: [] });
+  const [uploadedImages, setUploadedImages] = useState([]);
 
-    const fetchData = async () => {
+  useEffect(() => {
+    const fetchProduct = async () => {
       try {
         dispatch({ type: 'FETCH_REQUEST' });
-        const { data } = await axios.get(`/api/admin/products/${productId}`);
-        
-        // Parse JSON strings from database
-        const parsedData = {
-          ...data,
-          images: typeof data.images === 'string' ? JSON.parse(data.images) : data.images,
-          variants: typeof data.variants === 'string' ? JSON.parse(data.variants) : data.variants,
-          specifications: typeof data.specifications === 'string' ? 
-            JSON.parse(data.specifications) : data.specifications,
-          tags: typeof data.tags === 'string' ? JSON.parse(data.tags) : data.tags,
-        };
+        const { data } = await axios.get(`/api/admin/products/${id}`);
+        dispatch({ type: 'FETCH_SUCCESS', payload: data });
 
-        setProductData({
-          images: parsedData.images || [],
-          video: parsedData.video || '',
-          variants: parsedData.variants || [],
-          specifications: parsedData.specifications || [],
-          category: parsedData.category,
-          subcategory: parsedData.subcategory,
-          tags: parsedData.tags || [],
-          seoData: parsedData.seoData || {
-            title: parsedData.name,
-            description: parsedData.description,
-            keywords: []
-          }
-        });
+        // Set form values
+        setValue('name_fr', data.name_fr);
+        setValue('name_ar', data.name_ar);
+        setValue('name_url', data.name_url);
+        setValue('description', data.description);
+        setValue('images', data.images);
+        setValue('categoryId', data.categoryId);
+        setValue('price', data.price);
+        setValue('quantity', data.quantity);
+        setValue('quantity_endommage', data.quantity_endommage);
+        setValue('quantity_notification', data.quantity_notification);
+        setValue('status', data.status);
+        setValue('sellerId', data.sellerId);
 
-        reset(parsedData); // Reset form with parsed data
-        dispatch({ type: 'FETCH_SUCCESS' });
+        // Set variants
+        if (data.variants) {
+          setSelectedVariants(data.variants);
+        }
+        console.log(data.description)
+
+        // Set uploaded images
+        setUploadedImages(data.images || []);
       } catch (err) {
         dispatch({ type: 'FETCH_FAIL', payload: err.message });
         toast.error('Failed to load product');
       }
     };
 
-    fetchData();
-  }, [productId, reset]);
+    if (id) {
+      fetchProduct();
+    }
+  }, [id, setValue]);
 
-  const submitHandler = async (formData) => {
+
+  const onSubmit = async (data) => {
     try {
       dispatch({ type: 'UPDATE_REQUEST' });
-      
-      const updatedData = {
-        ...formData,
-        images: JSON.stringify(productData.images),
-        variants: JSON.stringify(productData.variants),
-        specifications: JSON.stringify(productData.specifications),
-        tags: JSON.stringify(productData.tags),
-        seoData: productData.seoData
+
+      // Transform data before sending
+      const productData = {
+        ...data,
+        images: uploadedImages,
+        price: parseFloat(data.price),
+        quantity: parseInt(data.quantity, 10),
+        quantity_endommage: parseInt(data.quantity_endommage, 10),
+        quantity_notification: parseInt(data.quantity_notification, 10),
+        sellerId: sellerId,
+        variants: selectedVariants,
       };
 
-      const { data } = await axios.put(`/api/admin/products/${productId}`, updatedData);
-      
+      await axios.put(`/api/admin/products/${id}`, productData);
       dispatch({ type: 'UPDATE_SUCCESS' });
       toast.success('Product updated successfully');
       router.push('/admin/products');
@@ -144,121 +154,285 @@ export default function AdminProductEditScreen() {
     }
   };
 
-  if (!productId) {
-    return <AdminLayout>Loading...</AdminLayout>;
-  }
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
+
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleImagesChange = (imageNames) => {
+    setUploadedImages(imageNames);
+    setValue('images', imageNames);
+  };
 
   return (
     <AdminLayout>
-      <div className="flex flex-col space-y-6 p-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Edit Product</h1>
-          <Button 
-            startIcon={<ArrowBack />}
-            onClick={() => router.push('/admin/products')}
-            variant="outlined"
-          >
-            Back to Products
-          </Button>
-        </div>
+      <Box className="p-6">
+        <Paper className="p-6">
+          <Typography variant="h4" className="mb-6">
+            Edit Product
+          </Typography>
+          <Stepper activeStep={activeStep} alternativeLabel className="mb-6">
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-        {loading ? (
-          <div className="flex justify-center p-8">
-            <CircularProgress />
-          </div>
-        ) : error ? (
-          <Alert severity="error">{error}</Alert>
-        ) : (
-          <form onSubmit={handleSubmit(submitHandler)}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-              <Tabs 
-                value={activeTab} 
-                onChange={(e, newValue) => setActiveTab(newValue)}
-                aria-label="product edit tabs"
-              >
-                <Tab label="Basic Info" id="tab-0" />
-                <Tab label="Media" id="tab-1" />
-                <Tab label="Variants" id="tab-2" />
-                <Tab label="Specifications" id="tab-3" />
-                <Tab label="SEO" id="tab-4" />
-              </Tabs>
-            </Box>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            {/* Basic Information */}
+            {activeStep === 0 && (
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Card
+                    sx={{
+                      background: 'linear-gradient(135deg, #6a11cb, #2575fc)',
+                      color: '#fff',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                      transition: 'transform 0.3s, box-shadow 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-5px)',
+                        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <CardContent>
+                      <Typography variant="h6" className="mb-4">
+                        Basic Information
+                      </Typography>
+                      <Grid container spacing={3}>
+                        {/* Product Name (French) */}
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            label="Product Name (French)"
+                            name="name_fr"
+                            value={watch('name_fr')}
+                            onChange={(e) => setValue('name_fr', e.target.value)}
+                            required
+                            InputLabelProps={{ style: { color: '#fff' } }}
+                            InputProps={{
+                              style: { color: '#fff', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '8px' },
+                            }}
+                          />
+                        </Grid>
 
-            <TabPanel value={activeTab} index={0}>
-              <BasicInfoForm 
-                register={register} 
-                errors={errors}
-                control={control}
-                productData={productData}
-                setProductData={setProductData}
+                        {/* Product Name (Arabic) */}
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            label="Product Name (Arabic)"
+                            name="name_ar"
+                            value={watch('name_ar')}
+                            onChange={(e) => setValue('name_ar', e.target.value)}
+                            required
+                            InputLabelProps={{ style: { color: '#fff' } }}
+                            InputProps={{
+                              style: { color: '#fff', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '8px' },
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Product URL */}
+                        <Grid item xs={12}>
+                          <TextField
+                            fullWidth
+                            label="Product URL"
+                            name="name_url"
+                            value={watch('name_url')}
+                            onChange={(e) => setValue('name_url', e.target.value)}
+                            required
+                            InputLabelProps={{ style: { color: '#fff' } }}
+                            InputProps={{
+                              style: { color: '#fff', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '8px' },
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Product Description */}
+                        <Grid item xs={12}>
+                          <Typography variant="subtitle1" className="mb-2">
+                            Product Description
+                          </Typography>
+                          <Controller
+                            name="description"
+                            control={control}
+                            render={({ field }) => (
+                              <QuillEditor
+                                productId={watch('name_url')}
+                                value={field.value}
+                                onChange={(value) => setValue('description', value)}
+                              />
+                            )}
+                          />
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+
+            {/* Media & Gallery */}
+            {activeStep === 1 && (
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Card
+                    sx={{
+                      background: 'linear-gradient(135deg, #6a11cb, #2575fc)',
+                      color: '#fff',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                      transition: 'transform 0.3s, box-shadow 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-5px)',
+                        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <CardContent>
+                      <Typography variant="h6" className="mb-4">
+                        Media & Gallery
+                      </Typography>
+                      <MediaUpload
+                        uploadedImages={uploadedImages}
+                        onImagesChange={handleImagesChange}
+                      />
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+
+            {/* Pricing & Inventory */}
+            {activeStep === 2 && (
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <Card
+                    sx={{
+                      background: 'linear-gradient(135deg, #6a11cb, #2575fc)',
+                      color: '#fff',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                      transition: 'transform 0.3s, box-shadow 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-5px)',
+                        boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <CardContent>
+                      <Typography variant="h6" className="mb-4">
+                        Pricing & Inventory
+                      </Typography>
+                      <Grid container spacing={3}>
+                        {/* Price */}
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            label="Price"
+                            name="price"
+                            value={watch('price')}
+                            onChange={(e) => setValue('price', e.target.value)}
+                            required
+                            InputLabelProps={{ style: { color: '#fff' } }}
+                            InputProps={{
+                              style: { color: '#fff', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '8px' },
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Quantity */}
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            label="Quantity"
+                            name="quantity"
+                            value={watch('quantity')}
+                            onChange={(e) => setValue('quantity', e.target.value)}
+                            required
+                            InputLabelProps={{ style: { color: '#fff' } }}
+                            InputProps={{
+                              style: { color: '#fff', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '8px' },
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Damaged Quantity */}
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            label="Damaged Quantity"
+                            name="quantity_endommage"
+                            value={watch('quantity_endommage')}
+                            onChange={(e) => setValue('quantity_endommage', e.target.value)}
+                            InputLabelProps={{ style: { color: '#fff' } }}
+                            InputProps={{
+                              style: { color: '#fff', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '8px' },
+                            }}
+                          />
+                        </Grid>
+
+                        {/* Notification Quantity */}
+                        <Grid item xs={12} md={6}>
+                          <TextField
+                            fullWidth
+                            label="Notification Quantity"
+                            name="quantity_notification"
+                            value={watch('quantity_notification')}
+                            onChange={(e) => setValue('quantity_notification', e.target.value)}
+                            InputLabelProps={{ style: { color: '#fff' } }}
+                            InputProps={{
+                              style: { color: '#fff', backgroundColor: 'rgba(255, 255, 255, 0.1)', borderRadius: '8px' },
+                            }}
+                          />
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+            )}
+
+            {/* Variants */}
+            {activeStep === 3 && (
+              <VariantsStep
+                selectedVariants={selectedVariants}
+                setSelectedVariants={setSelectedVariants}
               />
-            </TabPanel>
+            )}
 
-            <TabPanel value={activeTab} index={1}>
-              <MediaUpload 
-                productData={productData}
-                setProductData={setProductData}
-              />
-            </TabPanel>
-
-            <TabPanel value={activeTab} index={2}>
-              <VariantsForm 
-                productData={productData}
-                setProductData={setProductData}
-                control={control}
-              />
-            </TabPanel>
-
-            <TabPanel value={activeTab} index={3}>
-              <SpecificationsForm 
-                productData={productData}
-                setProductData={setProductData}
-                control={control}
-              />
-            </TabPanel>
-
-            <TabPanel value={activeTab} index={4}>
-              <SeoForm 
-                productData={productData}
-                setProductData={setProductData}
-                control={control}
-              />
-            </TabPanel>
-
-            <div className="flex justify-end mt-6">
+            {/* Navigation Buttons */}
+            <Box className="flex justify-between mt-6">
               <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                startIcon={<Save />}
-                disabled={loadingUpdate}
+                disabled={activeStep === 0}
+                onClick={handleBack}
+                startIcon={<ArrowBack />}
               >
-                {loadingUpdate ? 'Updating...' : 'Update Product'}
+                Back
               </Button>
-            </div>
+              <Button
+                variant="contained"
+                onClick={
+                  activeStep === steps.length - 1
+                    ? handleSubmit(onSubmit)
+                    : handleNext
+                }
+                endIcon={
+                  activeStep === steps.length - 1 ? <Save /> : <ArrowForward />
+                }
+                className="bg-blue-400"
+              >
+                {activeStep === steps.length - 1 ? "Update Product" : "Next"}
+              </Button>
+            </Box>
           </form>
-        )}
-      </div>
+        </Paper>
+      </Box>
     </AdminLayout>
   );
 }
-
-function TabPanel({ children, value, index }) {
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`product-tabpanel-${index}`}
-      aria-labelledby={`product-tab-${index}`}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
-
-
-
-
-
-
-

@@ -24,7 +24,12 @@ import {
   Paper,
   Tooltip,
   Switch,
-  Menu
+  Menu,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@mui/material';
 import {
   Add,
@@ -53,7 +58,7 @@ function reducer(state, action) {
         error: '' 
       };
     case 'FETCH_FAIL':
-      return { ...state, loading: false, error: action.payload };
+      return { ...state, loading: false, error: action.payload, products: []  };
     case 'DELETE_REQUEST':
       return { ...state, loadingDelete: true };
     case 'DELETE_SUCCESS':
@@ -89,6 +94,8 @@ export default function AdminProductsScreen() {
     sortBy: 'newest'
   });
   const [anchorEl, setAnchorEl] = useState(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,15 +105,18 @@ export default function AdminProductsScreen() {
           params: {
             page: page + 1,
             limit: rowsPerPage,
-            ...filters
-          }
+            ...filters,
+          },
         });
+        console.log('API Response:', data);
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (err) {
+        console.error('Fetch Error:', err.message);
         dispatch({ type: 'FETCH_FAIL', payload: err.message });
         toast.error('Failed to load products');
       }
     };
+    
 
     if (successDelete) {
       dispatch({ type: 'DELETE_RESET' });
@@ -115,9 +125,6 @@ export default function AdminProductsScreen() {
   }, [page, rowsPerPage, filters, successDelete]);
 
   const deleteHandler = async (productId) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) {
-      return;
-    }
     try {
       dispatch({ type: 'DELETE_REQUEST' });
       await axios.delete(`/api/admin/products/${productId}`);
@@ -134,13 +141,15 @@ export default function AdminProductsScreen() {
     setPage(0);
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
+  const handleMenuOpen = (event, productId) => {
+    setAnchorEl({ element: event.currentTarget, productId });
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  
 
   return (
     <AdminLayout>
@@ -296,80 +305,84 @@ export default function AdminProductsScreen() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
-                    <Box className="flex items-center gap-2">
-                      <img
-                        src={JSON.parse(product.images)[0]}
-                        alt={product.name}
-                        className="w-12 h-12 object-cover rounded"
-                      />
-                      <div>
-                        <Typography variant="subtitle2">{product.name}</Typography>
-                        <Typography variant="caption" color="textSecondary">
-                          SKU: {product.sku}
-                        </Typography>
-                      </div>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip label={product.category} size="small" />
-                  </TableCell>
-                  <TableCell>
-                    ${product.price}
-                    {product.salePrice && (
-                      <Typography variant="caption" color="error" className="ml-1">
-                        -${product.salePrice}
-                      </Typography>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={`${product.stock} in stock`}
-                      color={product.stock < 10 ? "warning" : "success"}
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={product.status}
-                      color={
-                        product.status === 'active' ? "success" :
-                        product.status === 'pending' ? "warning" : "default"
-                      }
-                      size="small"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Box className="flex items-center gap-1">
-                      <TrendingUp fontSize="small" color="primary" />
-                      {product.totalSales}
-                    </Box>
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton onClick={handleMenuOpen}>
-                      <MoreVert />
-                    </IconButton>
-                    <Menu
-                      anchorEl={anchorEl}
-                      open={Boolean(anchorEl)}
-                      onClose={handleMenuClose}
-                    >
-                      <MenuItem component={Link} href={`/admin/product/${product.id}`}>
-                        <Edit fontSize="small" className="mr-2" /> Edit
-                      </MenuItem>
-                      <MenuItem onClick={() => deleteHandler(product.id)}>
-                        <Delete fontSize="small" className="mr-2" /> Delete
-                      </MenuItem>
-                      <MenuItem component={Link} href={`/product/${product.slug}`}>
-                        <Visibility fontSize="small" className="mr-2" /> View
-                      </MenuItem>
-                    </Menu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
+  {products?.map((product) => (
+    <TableRow key={product.id}>
+      {/* Product Image and Name */}
+      <TableCell>
+        <Box className="flex items-center gap-2">
+        <img 
+      src={`/api/files/${product.name_url}/${product.image}`} 
+      alt={product.name_fr} 
+      className="w-12 h-12 object-cover rounded" 
+      // onError={(e) => e.target.src = "/placeholder.png"} 
+    />
+          <div>
+            <Typography variant="subtitle2">{product.name_fr || "No Name"}</Typography>
+          </div>
+        </Box>
+      </TableCell>
+
+      {/* Category Name */}
+      <TableCell>
+        <Chip label={product.category?.name_fr || "Unknown"} size="small" />
+      </TableCell>
+
+      {/* Price */}
+      <TableCell>
+        ${product.price}
+      </TableCell>
+
+      {/* Stock */}
+      <TableCell>
+        <Chip
+          label={`${product.quantity} in stock`}
+          color={product.quantity < 10 ? "warning" : "success"}
+          size="small"
+        />
+      </TableCell>
+
+      {/* Status */}
+      <TableCell>
+        <Chip
+          label={product.status}
+          color={
+            product.status === 'approved' ? "success" :
+            product.status === 'pending' ? "warning" : "default"
+          }
+          size="small"
+        />
+      </TableCell>
+
+      {/* Sales */}
+      <TableCell>
+        <Box className="flex items-center gap-1">
+          <TrendingUp fontSize="small" color="primary" />
+          {product.totalSales || 0}
+        </Box>
+      </TableCell>
+
+      {/* Actions */}
+      <TableCell align="right">
+        <Box className="flex gap-2">
+          <Link href={`/admin/product/${product.id}`} passHref legacyBehavior>
+            <IconButton>
+              <Edit fontSize="small" color="primary" />
+            </IconButton>
+          </Link>
+          <IconButton
+            onClick={() => {
+              setProductToDelete(product.id);
+              setDeleteModalOpen(true);
+            }}
+          >
+            <Delete fontSize="small" color="error" />
+          </IconButton>
+        </Box>
+      </TableCell>
+    </TableRow>
+  ))}
+</TableBody>
+
           </Table>
           <TablePagination
             component="div"
@@ -384,10 +397,36 @@ export default function AdminProductsScreen() {
           />
         </TableContainer>
       </Box>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        aria-labelledby="delete-confirmation-dialog"
+      >
+        <DialogTitle id="delete-confirmation-dialog">Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteModalOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button
+            onClick={async () => {
+              setDeleteModalOpen(false);
+              if (productToDelete) {
+                await deleteHandler(productToDelete);
+              }
+            }}
+            color="error"
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AdminLayout>
   );
 }
-
-AdminProductsScreen.auth = {
-  permissions: ['manage_orders', 'view_orders']
-};

@@ -2007,6 +2007,7 @@ export namespace Prisma {
   export type ProductAvgAggregateOutputType = {
     id: number | null
     categoryId: number | null
+    price: number | null
     quantity: number | null
     quantity_endommage: number | null
     quantity_notification: number | null
@@ -2017,6 +2018,7 @@ export namespace Prisma {
   export type ProductSumAggregateOutputType = {
     id: number | null
     categoryId: number | null
+    price: number | null
     quantity: number | null
     quantity_endommage: number | null
     quantity_notification: number | null
@@ -2031,7 +2033,7 @@ export namespace Prisma {
     name_url: string | null
     description: string | null
     categoryId: number | null
-    price: string | null
+    price: number | null
     quantity: number | null
     quantity_endommage: number | null
     quantity_notification: number | null
@@ -2050,7 +2052,7 @@ export namespace Prisma {
     name_url: string | null
     description: string | null
     categoryId: number | null
-    price: string | null
+    price: number | null
     quantity: number | null
     quantity_endommage: number | null
     quantity_notification: number | null
@@ -2069,6 +2071,9 @@ export namespace Prisma {
     name_url: number
     description: number
     images: number
+    variants: number
+    remise_prodique: number
+    remise_gros: number
     categoryId: number
     price: number
     quantity: number
@@ -2087,6 +2092,7 @@ export namespace Prisma {
   export type ProductAvgAggregateInputType = {
     id?: true
     categoryId?: true
+    price?: true
     quantity?: true
     quantity_endommage?: true
     quantity_notification?: true
@@ -2097,6 +2103,7 @@ export namespace Prisma {
   export type ProductSumAggregateInputType = {
     id?: true
     categoryId?: true
+    price?: true
     quantity?: true
     quantity_endommage?: true
     quantity_notification?: true
@@ -2149,6 +2156,9 @@ export namespace Prisma {
     name_url?: true
     description?: true
     images?: true
+    variants?: true
+    remise_prodique?: true
+    remise_gros?: true
     categoryId?: true
     price?: true
     quantity?: true
@@ -2254,13 +2264,16 @@ export namespace Prisma {
     name_fr: string
     name_ar: string
     name_url: string
-    description: string | null
-    images: JsonValue | null
+    description: string
+    images: JsonValue
+    variants: JsonValue | null
+    remise_prodique: JsonValue | null
+    remise_gros: JsonValue | null
     categoryId: number
-    price: string
+    price: number
     quantity: number
-    quantity_endommage: number
-    quantity_notification: number
+    quantity_endommage: number | null
+    quantity_notification: number | null
     status: string
     sellerId: number
     adminId: number | null
@@ -2295,6 +2308,9 @@ export namespace Prisma {
     name_url?: boolean
     description?: boolean
     images?: boolean
+    variants?: boolean
+    remise_prodique?: boolean
+    remise_gros?: boolean
     categoryId?: boolean
     price?: boolean
     quantity?: boolean
@@ -2317,6 +2333,9 @@ export namespace Prisma {
     name_url?: boolean
     description?: boolean
     images?: boolean
+    variants?: boolean
+    remise_prodique?: boolean
+    remise_gros?: boolean
     categoryId?: boolean
     price?: boolean
     quantity?: boolean
@@ -2344,13 +2363,16 @@ export namespace Prisma {
       name_fr: string
       name_ar: string
       name_url: string
-      description: string | null
-      images: Prisma.JsonValue | null
+      description: string
+      images: Prisma.JsonValue
+      variants: Prisma.JsonValue | null
+      remise_prodique: Prisma.JsonValue | null
+      remise_gros: Prisma.JsonValue | null
       categoryId: number
-      price: string
+      price: number
       quantity: number
-      quantity_endommage: number
-      quantity_notification: number
+      quantity_endommage: number | null
+      quantity_notification: number | null
       status: string
       sellerId: number
       adminId: number | null
@@ -2733,8 +2755,11 @@ export namespace Prisma {
     readonly name_url: FieldRef<"Product", 'String'>
     readonly description: FieldRef<"Product", 'String'>
     readonly images: FieldRef<"Product", 'Json'>
+    readonly variants: FieldRef<"Product", 'Json'>
+    readonly remise_prodique: FieldRef<"Product", 'Json'>
+    readonly remise_gros: FieldRef<"Product", 'Json'>
     readonly categoryId: FieldRef<"Product", 'Int'>
-    readonly price: FieldRef<"Product", 'String'>
+    readonly price: FieldRef<"Product", 'Float'>
     readonly quantity: FieldRef<"Product", 'Int'>
     readonly quantity_endommage: FieldRef<"Product", 'Int'>
     readonly quantity_notification: FieldRef<"Product", 'Int'>
@@ -3098,6 +3123,9 @@ export namespace Prisma {
     name_url: 'name_url',
     description: 'description',
     images: 'images',
+    variants: 'variants',
+    remise_prodique: 'remise_prodique',
+    remise_gros: 'remise_gros',
     categoryId: 'categoryId',
     price: 'price',
     quantity: 'quantity',
@@ -3128,6 +3156,13 @@ export namespace Prisma {
   };
 
   export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const JsonNullValueFilter: {
@@ -3165,7 +3200,6 @@ export namespace Prisma {
     name_ar: 'name_ar',
     name_url: 'name_url',
     description: 'description',
-    price: 'price',
     status: 'status',
     adminMessage: 'adminMessage'
   };
@@ -3327,13 +3361,16 @@ export namespace Prisma {
     name_fr?: StringFilter<"Product"> | string
     name_ar?: StringFilter<"Product"> | string
     name_url?: StringFilter<"Product"> | string
-    description?: StringNullableFilter<"Product"> | string | null
-    images?: JsonNullableFilter<"Product">
+    description?: StringFilter<"Product"> | string
+    images?: JsonFilter<"Product">
+    variants?: JsonNullableFilter<"Product">
+    remise_prodique?: JsonNullableFilter<"Product">
+    remise_gros?: JsonNullableFilter<"Product">
     categoryId?: IntFilter<"Product"> | number
-    price?: StringFilter<"Product"> | string
+    price?: FloatFilter<"Product"> | number
     quantity?: IntFilter<"Product"> | number
-    quantity_endommage?: IntFilter<"Product"> | number
-    quantity_notification?: IntFilter<"Product"> | number
+    quantity_endommage?: IntNullableFilter<"Product"> | number | null
+    quantity_notification?: IntNullableFilter<"Product"> | number | null
     status?: StringFilter<"Product"> | string
     sellerId?: IntFilter<"Product"> | number
     adminId?: IntNullableFilter<"Product"> | number | null
@@ -3348,13 +3385,16 @@ export namespace Prisma {
     name_fr?: SortOrder
     name_ar?: SortOrder
     name_url?: SortOrder
-    description?: SortOrderInput | SortOrder
-    images?: SortOrderInput | SortOrder
+    description?: SortOrder
+    images?: SortOrder
+    variants?: SortOrderInput | SortOrder
+    remise_prodique?: SortOrderInput | SortOrder
+    remise_gros?: SortOrderInput | SortOrder
     categoryId?: SortOrder
     price?: SortOrder
     quantity?: SortOrder
-    quantity_endommage?: SortOrder
-    quantity_notification?: SortOrder
+    quantity_endommage?: SortOrderInput | SortOrder
+    quantity_notification?: SortOrderInput | SortOrder
     status?: SortOrder
     sellerId?: SortOrder
     adminId?: SortOrderInput | SortOrder
@@ -3373,13 +3413,16 @@ export namespace Prisma {
     name_fr?: StringFilter<"Product"> | string
     name_ar?: StringFilter<"Product"> | string
     name_url?: StringFilter<"Product"> | string
-    description?: StringNullableFilter<"Product"> | string | null
-    images?: JsonNullableFilter<"Product">
+    description?: StringFilter<"Product"> | string
+    images?: JsonFilter<"Product">
+    variants?: JsonNullableFilter<"Product">
+    remise_prodique?: JsonNullableFilter<"Product">
+    remise_gros?: JsonNullableFilter<"Product">
     categoryId?: IntFilter<"Product"> | number
-    price?: StringFilter<"Product"> | string
+    price?: FloatFilter<"Product"> | number
     quantity?: IntFilter<"Product"> | number
-    quantity_endommage?: IntFilter<"Product"> | number
-    quantity_notification?: IntFilter<"Product"> | number
+    quantity_endommage?: IntNullableFilter<"Product"> | number | null
+    quantity_notification?: IntNullableFilter<"Product"> | number | null
     status?: StringFilter<"Product"> | string
     sellerId?: IntFilter<"Product"> | number
     adminId?: IntNullableFilter<"Product"> | number | null
@@ -3394,13 +3437,16 @@ export namespace Prisma {
     name_fr?: SortOrder
     name_ar?: SortOrder
     name_url?: SortOrder
-    description?: SortOrderInput | SortOrder
-    images?: SortOrderInput | SortOrder
+    description?: SortOrder
+    images?: SortOrder
+    variants?: SortOrderInput | SortOrder
+    remise_prodique?: SortOrderInput | SortOrder
+    remise_gros?: SortOrderInput | SortOrder
     categoryId?: SortOrder
     price?: SortOrder
     quantity?: SortOrder
-    quantity_endommage?: SortOrder
-    quantity_notification?: SortOrder
+    quantity_endommage?: SortOrderInput | SortOrder
+    quantity_notification?: SortOrderInput | SortOrder
     status?: SortOrder
     sellerId?: SortOrder
     adminId?: SortOrderInput | SortOrder
@@ -3422,13 +3468,16 @@ export namespace Prisma {
     name_fr?: StringWithAggregatesFilter<"Product"> | string
     name_ar?: StringWithAggregatesFilter<"Product"> | string
     name_url?: StringWithAggregatesFilter<"Product"> | string
-    description?: StringNullableWithAggregatesFilter<"Product"> | string | null
-    images?: JsonNullableWithAggregatesFilter<"Product">
+    description?: StringWithAggregatesFilter<"Product"> | string
+    images?: JsonWithAggregatesFilter<"Product">
+    variants?: JsonNullableWithAggregatesFilter<"Product">
+    remise_prodique?: JsonNullableWithAggregatesFilter<"Product">
+    remise_gros?: JsonNullableWithAggregatesFilter<"Product">
     categoryId?: IntWithAggregatesFilter<"Product"> | number
-    price?: StringWithAggregatesFilter<"Product"> | string
+    price?: FloatWithAggregatesFilter<"Product"> | number
     quantity?: IntWithAggregatesFilter<"Product"> | number
-    quantity_endommage?: IntWithAggregatesFilter<"Product"> | number
-    quantity_notification?: IntWithAggregatesFilter<"Product"> | number
+    quantity_endommage?: IntNullableWithAggregatesFilter<"Product"> | number | null
+    quantity_notification?: IntNullableWithAggregatesFilter<"Product"> | number | null
     status?: StringWithAggregatesFilter<"Product"> | string
     sellerId?: IntWithAggregatesFilter<"Product"> | number
     adminId?: IntNullableWithAggregatesFilter<"Product"> | number | null
@@ -3561,12 +3610,15 @@ export namespace Prisma {
     name_fr: string
     name_ar: string
     name_url: string
-    description?: string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price: string
+    description: string
+    images: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price: number
     quantity: number
-    quantity_endommage: number
-    quantity_notification: number
+    quantity_endommage?: number | null
+    quantity_notification?: number | null
     status?: string
     sellerId: number
     adminId?: number | null
@@ -3581,13 +3633,16 @@ export namespace Prisma {
     name_fr: string
     name_ar: string
     name_url: string
-    description?: string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
+    description: string
+    images: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
     categoryId: number
-    price: string
+    price: number
     quantity: number
-    quantity_endommage: number
-    quantity_notification: number
+    quantity_endommage?: number | null
+    quantity_notification?: number | null
     status?: string
     sellerId: number
     adminId?: number | null
@@ -3600,12 +3655,15 @@ export namespace Prisma {
     name_fr?: StringFieldUpdateOperationsInput | string
     name_ar?: StringFieldUpdateOperationsInput | string
     name_url?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    images?: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price?: FloatFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
-    quantity_endommage?: IntFieldUpdateOperationsInput | number
-    quantity_notification?: IntFieldUpdateOperationsInput | number
+    quantity_endommage?: NullableIntFieldUpdateOperationsInput | number | null
+    quantity_notification?: NullableIntFieldUpdateOperationsInput | number | null
     status?: StringFieldUpdateOperationsInput | string
     sellerId?: IntFieldUpdateOperationsInput | number
     adminId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -3620,13 +3678,16 @@ export namespace Prisma {
     name_fr?: StringFieldUpdateOperationsInput | string
     name_ar?: StringFieldUpdateOperationsInput | string
     name_url?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
+    description?: StringFieldUpdateOperationsInput | string
+    images?: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
     categoryId?: IntFieldUpdateOperationsInput | number
-    price?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
-    quantity_endommage?: IntFieldUpdateOperationsInput | number
-    quantity_notification?: IntFieldUpdateOperationsInput | number
+    quantity_endommage?: NullableIntFieldUpdateOperationsInput | number | null
+    quantity_notification?: NullableIntFieldUpdateOperationsInput | number | null
     status?: StringFieldUpdateOperationsInput | string
     sellerId?: IntFieldUpdateOperationsInput | number
     adminId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -3640,13 +3701,16 @@ export namespace Prisma {
     name_fr: string
     name_ar: string
     name_url: string
-    description?: string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
+    description: string
+    images: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
     categoryId: number
-    price: string
+    price: number
     quantity: number
-    quantity_endommage: number
-    quantity_notification: number
+    quantity_endommage?: number | null
+    quantity_notification?: number | null
     status?: string
     sellerId: number
     adminId?: number | null
@@ -3659,12 +3723,15 @@ export namespace Prisma {
     name_fr?: StringFieldUpdateOperationsInput | string
     name_ar?: StringFieldUpdateOperationsInput | string
     name_url?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    images?: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price?: FloatFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
-    quantity_endommage?: IntFieldUpdateOperationsInput | number
-    quantity_notification?: IntFieldUpdateOperationsInput | number
+    quantity_endommage?: NullableIntFieldUpdateOperationsInput | number | null
+    quantity_notification?: NullableIntFieldUpdateOperationsInput | number | null
     status?: StringFieldUpdateOperationsInput | string
     sellerId?: IntFieldUpdateOperationsInput | number
     adminId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -3678,13 +3745,16 @@ export namespace Prisma {
     name_fr?: StringFieldUpdateOperationsInput | string
     name_ar?: StringFieldUpdateOperationsInput | string
     name_url?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
+    description?: StringFieldUpdateOperationsInput | string
+    images?: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
     categoryId?: IntFieldUpdateOperationsInput | number
-    price?: StringFieldUpdateOperationsInput | string
+    price?: FloatFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
-    quantity_endommage?: IntFieldUpdateOperationsInput | number
-    quantity_notification?: IntFieldUpdateOperationsInput | number
+    quantity_endommage?: NullableIntFieldUpdateOperationsInput | number | null
+    quantity_notification?: NullableIntFieldUpdateOperationsInput | number | null
     status?: StringFieldUpdateOperationsInput | string
     sellerId?: IntFieldUpdateOperationsInput | number
     adminId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -3968,6 +4038,39 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
+  export type JsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
 
   export type CategoryScalarRelationFilter = {
     is?: CategoryWhereInput
@@ -3987,6 +4090,9 @@ export namespace Prisma {
     name_url?: SortOrder
     description?: SortOrder
     images?: SortOrder
+    variants?: SortOrder
+    remise_prodique?: SortOrder
+    remise_gros?: SortOrder
     categoryId?: SortOrder
     price?: SortOrder
     quantity?: SortOrder
@@ -4003,6 +4109,7 @@ export namespace Prisma {
   export type ProductAvgOrderByAggregateInput = {
     id?: SortOrder
     categoryId?: SortOrder
+    price?: SortOrder
     quantity?: SortOrder
     quantity_endommage?: SortOrder
     quantity_notification?: SortOrder
@@ -4051,11 +4158,53 @@ export namespace Prisma {
   export type ProductSumOrderByAggregateInput = {
     id?: SortOrder
     categoryId?: SortOrder
+    price?: SortOrder
     quantity?: SortOrder
     quantity_endommage?: SortOrder
     quantity_notification?: SortOrder
     sellerId?: SortOrder
     adminId?: SortOrder
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type ProductCreateNestedManyWithoutCategoryInput = {
@@ -4132,6 +4281,14 @@ export namespace Prisma {
     create?: XOR<CategoryCreateWithoutProductsInput, CategoryUncheckedCreateWithoutProductsInput>
     connectOrCreate?: CategoryCreateOrConnectWithoutProductsInput
     connect?: CategoryWhereUniqueInput
+  }
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type CategoryUpdateOneRequiredWithoutProductsNestedInput = {
@@ -4330,17 +4487,58 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
+  export type NestedJsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue
+    lte?: InputJsonValue
+    gt?: InputJsonValue
+    gte?: InputJsonValue
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[]
+    notIn?: number[]
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
 
   export type ProductCreateWithoutCategoryInput = {
     name_fr: string
     name_ar: string
     name_url: string
-    description?: string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price: string
+    description: string
+    images: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price: number
     quantity: number
-    quantity_endommage: number
-    quantity_notification: number
+    quantity_endommage?: number | null
+    quantity_notification?: number | null
     status?: string
     sellerId: number
     adminId?: number | null
@@ -4354,12 +4552,15 @@ export namespace Prisma {
     name_fr: string
     name_ar: string
     name_url: string
-    description?: string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price: string
+    description: string
+    images: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price: number
     quantity: number
-    quantity_endommage: number
-    quantity_notification: number
+    quantity_endommage?: number | null
+    quantity_notification?: number | null
     status?: string
     sellerId: number
     adminId?: number | null
@@ -4402,13 +4603,16 @@ export namespace Prisma {
     name_fr?: StringFilter<"Product"> | string
     name_ar?: StringFilter<"Product"> | string
     name_url?: StringFilter<"Product"> | string
-    description?: StringNullableFilter<"Product"> | string | null
-    images?: JsonNullableFilter<"Product">
+    description?: StringFilter<"Product"> | string
+    images?: JsonFilter<"Product">
+    variants?: JsonNullableFilter<"Product">
+    remise_prodique?: JsonNullableFilter<"Product">
+    remise_gros?: JsonNullableFilter<"Product">
     categoryId?: IntFilter<"Product"> | number
-    price?: StringFilter<"Product"> | string
+    price?: FloatFilter<"Product"> | number
     quantity?: IntFilter<"Product"> | number
-    quantity_endommage?: IntFilter<"Product"> | number
-    quantity_notification?: IntFilter<"Product"> | number
+    quantity_endommage?: IntNullableFilter<"Product"> | number | null
+    quantity_notification?: IntNullableFilter<"Product"> | number | null
     status?: StringFilter<"Product"> | string
     sellerId?: IntFilter<"Product"> | number
     adminId?: IntNullableFilter<"Product"> | number | null
@@ -4504,12 +4708,15 @@ export namespace Prisma {
     name_fr: string
     name_ar: string
     name_url: string
-    description?: string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price: string
+    description: string
+    images: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price: number
     quantity: number
-    quantity_endommage: number
-    quantity_notification: number
+    quantity_endommage?: number | null
+    quantity_notification?: number | null
     status?: string
     sellerId: number
     adminId?: number | null
@@ -4522,12 +4729,15 @@ export namespace Prisma {
     name_fr?: StringFieldUpdateOperationsInput | string
     name_ar?: StringFieldUpdateOperationsInput | string
     name_url?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    images?: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price?: FloatFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
-    quantity_endommage?: IntFieldUpdateOperationsInput | number
-    quantity_notification?: IntFieldUpdateOperationsInput | number
+    quantity_endommage?: NullableIntFieldUpdateOperationsInput | number | null
+    quantity_notification?: NullableIntFieldUpdateOperationsInput | number | null
     status?: StringFieldUpdateOperationsInput | string
     sellerId?: IntFieldUpdateOperationsInput | number
     adminId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -4541,12 +4751,15 @@ export namespace Prisma {
     name_fr?: StringFieldUpdateOperationsInput | string
     name_ar?: StringFieldUpdateOperationsInput | string
     name_url?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    images?: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price?: FloatFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
-    quantity_endommage?: IntFieldUpdateOperationsInput | number
-    quantity_notification?: IntFieldUpdateOperationsInput | number
+    quantity_endommage?: NullableIntFieldUpdateOperationsInput | number | null
+    quantity_notification?: NullableIntFieldUpdateOperationsInput | number | null
     status?: StringFieldUpdateOperationsInput | string
     sellerId?: IntFieldUpdateOperationsInput | number
     adminId?: NullableIntFieldUpdateOperationsInput | number | null
@@ -4560,12 +4773,15 @@ export namespace Prisma {
     name_fr?: StringFieldUpdateOperationsInput | string
     name_ar?: StringFieldUpdateOperationsInput | string
     name_url?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    images?: NullableJsonNullValueInput | InputJsonValue
-    price?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    images?: JsonNullValueInput | InputJsonValue
+    variants?: NullableJsonNullValueInput | InputJsonValue
+    remise_prodique?: NullableJsonNullValueInput | InputJsonValue
+    remise_gros?: NullableJsonNullValueInput | InputJsonValue
+    price?: FloatFieldUpdateOperationsInput | number
     quantity?: IntFieldUpdateOperationsInput | number
-    quantity_endommage?: IntFieldUpdateOperationsInput | number
-    quantity_notification?: IntFieldUpdateOperationsInput | number
+    quantity_endommage?: NullableIntFieldUpdateOperationsInput | number | null
+    quantity_notification?: NullableIntFieldUpdateOperationsInput | number | null
     status?: StringFieldUpdateOperationsInput | string
     sellerId?: IntFieldUpdateOperationsInput | number
     adminId?: NullableIntFieldUpdateOperationsInput | number | null

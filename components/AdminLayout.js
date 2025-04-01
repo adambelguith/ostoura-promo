@@ -15,11 +15,30 @@ import {
   UserCircleIcon,
   SearchIcon
 } from '@heroicons/react/outline';
+import { useSession, getSession, signOut } from 'next-auth/react';
 
 export default function AdminLayout({ children }) {
   const [isOpen, setIsOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  // Handle route changes
+  useEffect(() => {
+    const handleStart = () => setIsLoading(true);
+    const handleComplete = () => setIsLoading(false);
+
+    router.events.on('routeChangeStart', handleStart);
+    router.events.on('routeChangeComplete', handleComplete);
+    router.events.on('routeChangeError', handleComplete);
+
+    return () => {
+      router.events.off('routeChangeStart', handleStart);
+      router.events.off('routeChangeComplete', handleComplete);
+      router.events.off('routeChangeError', handleComplete);
+    };
+  }, [router]);
 
   // Handle responsive sidebar
   useEffect(() => {
@@ -31,6 +50,22 @@ export default function AdminLayout({ children }) {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    // Check session status
+    if (status === 'loading') return; // Wait for session to load
+
+    // If no session, redirect to login
+    if (!session) {
+      router.push('/login');
+      return;
+    }
+
+    // If session exists but user is not admin or seller, redirect to home
+    if (session.user.role !== 'admin' && session.user.role !== 'seller') {
+      router.push('/');
+    }
+  }, [session, status, router]);
 
   const menuItems = [
     {
@@ -65,8 +100,35 @@ export default function AdminLayout({ children }) {
     }
   ];
 
+  // Handle logout
+  const handleLogout = async () => {
+    await signOut({ redirect: false }); // Sign out without redirecting
+    router.push('/auth/login'); // Redirect to login page
+  };
+
+  // If session is loading, show a loading indicator
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  // If user is not authorized, return null (they will be redirected)
+  if (session?.user.role !== 'admin' && session?.user.role !== 'seller') {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Loading Screen */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      )}
+
       {/* Overlay for mobile */}
       {isMobile && isOpen && (
         <div 
@@ -120,15 +182,20 @@ export default function AdminLayout({ children }) {
               <UserCircleIcon className="w-8 h-8 text-gray-400" />
               {(isOpen || isMobile) && (
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Admin User</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">admin@example.com</p>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    {session?.user?.name || 'Admin User'}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {session?.user?.email || 'admin@example.com'}
+                  </p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Logout Button */}
-          <button 
+          <button
+            onClick={handleLogout}
             className={`flex items-center w-full p-4 text-gray-600 dark:text-gray-400 
               hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors
               ${isOpen || isMobile ? 'justify-start space-x-3' : 'justify-center'}`}
@@ -210,4 +277,34 @@ function MenuItem({ item, isOpen, currentPath }) {
       </a>
     </Link>
   );
+}
+
+// Server-side check for session and role
+export async function getServerSideProps(context) {
+  const session = await getSession(context);
+
+  // If no session, redirect to login
+  if (!session) {
+    return {
+      redirect: {
+        destination: '/auth/login',
+        permanent: false,
+      },
+    };
+  }
+
+  // If session exists but user is not admin or seller, redirect to home
+  if (session.user.role !== 'admin' && session.user.role !== 'seller') {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false,
+      },
+    };
+  }
+
+  // If user is authorized, proceed
+  return {
+    props: { session },
+  };
 } 

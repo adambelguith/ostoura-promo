@@ -10,20 +10,20 @@ export default function ProductItem({ product, addToCartHandler }) {
     <div className="product-card shadow-lg rounded-xl">
       <Link href={`/product/${product.slug}`} passHref>
         <div className='flex w-full justify-center items-center'>
-          <img
+          {/* <img
             src={product.image[0]}
             alt={product.name}
             className="rounded shadow object-cover h-48 w-full "
-          />
+          /> */}
         </div>
       </Link>
       <div className="flex flex-col items-center justify-center p-2 ">
-        <Link href={`/product/${product.slug}`} passHref>
+        {/* <Link href={`/product/${product.slug}`} passHref>
             <h2 className="text-lg product-name text-center font-mono font-extrabold  hover:font-bold capitalize">{product.name.length > 45 ?(product.name.slice(0,45).split(' ').slice(0,-1).join(' ').concat(" ...")):(product.name) }</h2>
-        </Link>
+        </Link> */}
 
 
-        {product.countInStock >0 ?(
+        {/* {product.countInStock >0 ?(
           <div>
               <p className="text-2xl product-name font-mono font-extrabold hover:font-bold capitalize ml-4">TND {product.price}</p>
             <div className="h-9 w-28 bg-white border-[#079afc65] border-2 flex justify-center">
@@ -48,7 +48,7 @@ export default function ProductItem({ product, addToCartHandler }) {
           </div>
           ):(
               <h1 className='text-xl text-[#FF0011]'> Product Out of Stock</h1>
-          )}
+          )} */}
         <button
           className="primary-button button-product"
           type="button"

@@ -1,5 +1,5 @@
-import { isAuth, isAdmin } from '../../../../middleware/jwt';
-import db from '../../../../utils/db';
+import { isAuth, isAdmin } from '../../../../../middleware/jwt';
+import db from '../../../../../utils/db';
 
 const handler = async (req, res) => {
   await isAuth(req, res, async () => {

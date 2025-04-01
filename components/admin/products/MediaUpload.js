@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Box, 
   Card, 
@@ -8,64 +8,88 @@ import {
   Grid,
   LinearProgress,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import {
   AddPhotoAlternate,
   Delete,
-  Edit,
-  VideoLibrary,
-  DragIndicator
 } from '@mui/icons-material';
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 
-export default function MediaUpload({ productId, productData, setProductData }) {
+export default function MediaUpload({ productId, productData, setProductData, onImagesChange }) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [existingImages, setExistingImages] = useState([]);
+  const [deleteIndex, setDeleteIndex] = useState(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  // Fetch existing images when the component mounts
+  useEffect(() => {
+    fetchExistingImages();
+  }, [productId, onImagesChange]); // Only fetch on mount or when the productId changes
+
+  const fetchExistingImages = async () => {
+    try {
+      const { data } = await axios.get(`/api/files/${productId}`);
+      setExistingImages(data.images || []);
+      onImagesChange(data.images.map((img) => img.name)); // Pass image names to parent
+    } catch (error) {
+      console.error('Error fetching existing images:', error);
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.webp'],
       'video/*': ['.mp4', '.webm']
     },
-    maxSize: 10485760, // 10MB
+    maxSize: 10 * 1024 * 1024 , // 10MB
     onDrop: handleFileDrop
   });
 
   async function handleFileDrop(acceptedFiles) {
     try {
       setIsUploading(true);
+
       const uploadPromises = acceptedFiles.map(async (file) => {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('productId', productId); // Add productId for directory structure
-
-        const { data } = await axios.post('/api/admin/upload-local', formData, {
-          onUploadProgress: (progressEvent) => {
-            const progress = (progressEvent.loaded / progressEvent.total) * 100;
-            setUploadProgress(progress);
+        const { data } = await axios.post(
+          `/api/admin/upload-local?name_url=${productId}`,
+          formData,
+          {
+            onUploadProgress: (progressEvent) => {
+              const progress = (progressEvent.loaded / progressEvent.total) * 100;
+              setUploadProgress(progress);
+            },
           }
-        });
+        );
 
         return {
-          original: data.url,
-          thumbnail: data.thumbnail,
+          url: data.url,
           name: file.name,
-          type: file.type.startsWith('image/') ? 'image' : 'video',
-          size: file.size
         };
       });
 
       const uploadedFiles = await Promise.all(uploadPromises);
-      
-      setProductData(prev => ({
+      const updatedImages = [...existingImages, ...uploadedFiles];
+      setExistingImages(updatedImages);
+      onImagesChange(updatedImages.map((img) => img.name)); // Pass updated image names to parent
+      setProductData((prev) => ({
         ...prev,
-        media: [...(prev.media || []), ...uploadedFiles]
+        images: updatedImages,
       }));
 
       toast.success('Files uploaded successfully');
+
+      // Refresh images after upload
+      fetchExistingImages();
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload files');
@@ -75,48 +99,51 @@ export default function MediaUpload({ productId, productData, setProductData }) 
     }
   }
 
-  const handleDelete = async (index) => {
-    try {
-      const mediaToDelete = productData.media[index];
-      
-      // Delete from local storage
-      await axios.delete('/api/admin/upload-local', {
-        data: { 
-          urls: [mediaToDelete.original, mediaToDelete.thumbnail],
-          productId
-        }
-      });
-
-      // Update state
-      setProductData(prev => ({
-        ...prev,
-        media: prev.media.filter((_, i) => i !== index)
-      }));
-
-      toast.success('Media deleted successfully');
-    } catch (error) {
-      console.error('Delete error:', error);
-      toast.error('Failed to delete media');
-    }
+  const openDeleteModal = (index) => {
+    setDeleteIndex(index);
+    setIsDeleteModalOpen(true);
   };
 
-  const handleReorder = (dragIndex, hoverIndex) => {
-    setProductData(prev => {
-      const newMedia = [...prev.media];
-      const dragItem = newMedia[dragIndex];
-      newMedia.splice(dragIndex, 1);
-      newMedia.splice(hoverIndex, 0, dragItem);
-      return { ...prev, media: newMedia };
-    });
+  const closeDeleteModal = () => {
+    setDeleteIndex(null);
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteIndex !== null) {
+      try {
+        const imageToDelete = existingImages[deleteIndex];
+        const { url } = imageToDelete;
+        const filename = url.split('/').pop();
+  
+        await axios.delete(`/api/files/${productId}/delete`, {
+          data: {
+            name_url: productId,
+            filename,
+          },
+        });
+  
+        const updatedImages = existingImages.filter((_, i) => i !== deleteIndex);
+        setExistingImages(updatedImages);
+        onImagesChange(updatedImages.map((img) => img.name)); // Pass updated image names to parent
+        setProductData((prev) => ({
+          ...prev,
+          images: updatedImages,
+        }));
+  
+        toast.success('Image deleted successfully');
+      } catch (error) {
+        console.error('Delete error:', error);
+        toast.error('Failed to delete image');
+      } finally {
+        closeDeleteModal();
+      }
+    }
   };
 
   return (
     <Card>
       <CardContent>
-        <Typography variant="h6" className="mb-4">
-          Media Gallery
-        </Typography>
-
         {/* Drop Zone */}
         <Box
           {...getRootProps()}
@@ -145,48 +172,54 @@ export default function MediaUpload({ productId, productData, setProductData }) 
 
         {/* Media Grid */}
         <Grid container spacing={2} className="mt-4">
-          {productData.media?.map((item, index) => (
+          {existingImages.map((item, index) => (
             <Grid item xs={6} sm={4} md={3} key={index}>
-              <Card 
-                className="relative group cursor-move"
-                draggable
-                onDragStart={(e) => e.dataTransfer.setData('text/plain', index)}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  const dragIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                  handleReorder(dragIndex, index);
-                }}
-              >
-                {item.type === 'image' ? (
+              <Card className="relative group">
                   <Image
-                    src={item.thumbnail || item.original}
+                    src={item.url}
                     alt={item.name}
                     width={200}
                     height={200}
                     className="w-full h-48 object-cover"
+                    unoptimized
                   />
-                ) : (
-                  <Box className="w-full h-48 bg-gray-100 flex items-center justify-center">
-                    <VideoLibrary className="text-4xl" />
-                  </Box>
-                )}
-
-                {/* Overlay Actions */}
-                <Box className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <Box className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <IconButton
                     size="small"
-                    onClick={() => handleDelete(index)}
+                    onClick={() => openDeleteModal(index)}
                   >
                     <Delete className="text-white" />
                   </IconButton>
-                  <DragIndicator className="text-white" />
                 </Box>
               </Card>
             </Grid>
           ))}
         </Grid>
+
+        {/* Delete Confirmation Modal */}
+        <Dialog
+          open={isDeleteModalOpen}
+          onClose={closeDeleteModal}
+          aria-labelledby="delete-confirmation-modal"
+        >
+          <DialogTitle id="delete-confirmation-modal">
+            Confirm Delete
+          </DialogTitle>
+          <DialogContent>
+            <Typography>
+              Are you sure you want to delete this image? This action cannot be undone.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeDeleteModal} color="primary">
+              Cancel
+            </Button>
+            <Button onClick={handleDeleteConfirm} color="error" variant="contained" className="bg-red-400">
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </CardContent>
     </Card>
   );
-} 
+}
